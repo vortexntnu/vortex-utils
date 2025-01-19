@@ -6,6 +6,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 
 include_directories(include)
 
@@ -30,5 +31,7 @@ install(
 ament_export_dependencies()
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
+
+ament_python_install_package(${PROJECT_NAME})
 
 ament_package()
