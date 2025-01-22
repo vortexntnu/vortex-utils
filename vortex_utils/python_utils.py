@@ -76,14 +76,3 @@ class State:
 
     def __sub__(self, other: "State") -> "State":
             return State(pose=self.pose - other.pose, twist=self.twist - other.twist)
-
-    
-    
-test_pose = Pose(x=1.0, y=2.0, z=3.0, roll=0.1, pitch=0.2, yaw=0.3)
-test_twist = Twist(linear_x=0.1, linear_y=0.2, linear_z=0.3, angular_x=0.01, angular_y=0.02, angular_z=0.03)
-test_pose2 = Pose(x=0.1, y=0.2, z=0.3, roll=0.01, pitch=0.02, yaw=0.03)
-test_twist2 = Twist(linear_x=0.01, linear_y=0.02, linear_z=0.03, angular_x=0.001, angular_y=0.002, angular_z=0.003)
-
-euler = [1.0, 0.0, 0.0]
-quat = euler_to_quat(*euler)
-print(quat)
