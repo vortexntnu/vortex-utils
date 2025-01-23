@@ -18,7 +18,7 @@ def quat_to_euler(x: float, y: float, z: float, w: float) -> np.ndarray:
     Converts quaternion (x, y, z, w) to euler angles
     """
     rotation_matrix = Rotation.from_quat([x, y, z, w]).as_matrix()
-    euler_angles = Rotation.from_matrix(rotation_matrix).as_euler("ZYX")
+    euler_angles = Rotation.from_matrix(rotation_matrix).as_euler("XYZ")
     return euler_angles
 
 @dataclass(slots=True)
@@ -43,7 +43,8 @@ class Pose:
     
     def as_rotation_matrix(self) -> np.ndarray:
         euler_angles = [self.roll, self.pitch, self.yaw]
-        rotation_matrix = Rotation.from_euler("ZYX", euler_angles).as_matrix()
+        quat = euler_to_quat(*euler_angles)
+        rotation_matrix = Rotation.from_quat(quat).as_matrix()
         return rotation_matrix
 
 @dataclass(slots=True)
@@ -72,7 +73,7 @@ class State:
     twist: Twist
 
     def __add__(self, other: "State") -> "State":
-            return State(pose=self.pose + other.pose, twist=self.twist + other.twist)
+        return State(pose=self.pose + other.pose, twist=self.twist + other.twist)
 
     def __sub__(self, other: "State") -> "State":
-            return State(pose=self.pose - other.pose, twist=self.twist - other.twist)
+        return State(pose=self.pose - other.pose, twist=self.twist - other.twist)
