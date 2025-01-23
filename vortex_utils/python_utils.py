@@ -22,7 +22,7 @@ def quat_to_euler(x: float, y: float, z: float, w: float) -> np.ndarray:
     return euler_angles
 
 @dataclass(slots=True)
-class Pose:
+class PoseData:
     x: float = 0.0
     y: float = 0.0
     z: float = 0.0
@@ -30,16 +30,16 @@ class Pose:
     pitch: float = 0.0
     yaw: float = 0.0
 
-    def __add__(self, other: "Pose") -> "Pose":
-        return Pose(**{field.name: getattr(self, field.name) + getattr(other, field.name) for field in self.__dataclass_fields__.values()})
+    def __add__(self, other: "PoseData") -> "PoseData":
+        return PoseData(**{field.name: getattr(self, field.name) + getattr(other, field.name) for field in self.__dataclass_fields__.values()})
 
-    def __sub__(self, other: "Pose") -> "Pose":
-        return Pose(**{field.name: getattr(self, field.name) - getattr(other, field.name) for field in self.__dataclass_fields__.values()})
+    def __sub__(self, other: "PoseData") -> "PoseData":
+        return PoseData(**{field.name: getattr(self, field.name) - getattr(other, field.name) for field in self.__dataclass_fields__.values()})
     
-    def __mul__(self, other: float) -> "Pose":
-        if isinstance(other, Pose):
-            return Pose(**{field.name: getattr(self, field.name) * getattr(other, field.name) for field in self.__dataclass_fields__.values()})
-        return Pose(**{field.name: getattr(self, field.name) * other for field in self.__dataclass_fields__.values()})
+    def __mul__(self, other: float) -> "PoseData":
+        if isinstance(other, PoseData):
+            return PoseData(**{field.name: getattr(self, field.name) * getattr(other, field.name) for field in self.__dataclass_fields__.values()})
+        return PoseData(**{field.name: getattr(self, field.name) * other for field in self.__dataclass_fields__.values()})
     
     def as_rotation_matrix(self) -> np.ndarray:
         euler_angles = [self.roll, self.pitch, self.yaw]
@@ -48,7 +48,7 @@ class Pose:
         return rotation_matrix
 
 @dataclass(slots=True)
-class Twist:
+class TwistData:
     linear_x: float = 0.0
     linear_y: float = 0.0
     linear_z: float = 0.0
@@ -56,21 +56,21 @@ class Twist:
     angular_y: float = 0.0
     angular_z: float = 0.0
     
-    def __add__(self, other: "Twist") -> "Twist":
-        return Twist(**{field.name: getattr(self, field.name) + getattr(other, field.name) for field in self.__dataclass_fields__.values()})
+    def __add__(self, other: "TwistData") -> "TwistData":
+        return TwistData(**{field.name: getattr(self, field.name) + getattr(other, field.name) for field in self.__dataclass_fields__.values()})
 
-    def __sub__(self, other: "Twist") -> "Twist":
-        return Twist(**{field.name: getattr(self, field.name) - getattr(other, field.name) for field in self.__dataclass_fields__.values()})
+    def __sub__(self, other: "TwistData") -> "TwistData":
+        return TwistData(**{field.name: getattr(self, field.name) - getattr(other, field.name) for field in self.__dataclass_fields__.values()})
     
-    def __mul__(self, other: float) -> "Twist":
-        if isinstance(other, Twist): 
-            return Twist(**{field.name: getattr(self, field.name) * getattr(other, field.name) for field in self.__dataclass_fields__.values()})
-        return Twist(**{field.name: getattr(self, field.name) * other for field in self.__dataclass_fields__.values()})
+    def __mul__(self, other: float) -> "TwistData":
+        if isinstance(other, TwistData): 
+            return TwistData(**{field.name: getattr(self, field.name) * getattr(other, field.name) for field in self.__dataclass_fields__.values()})
+        return TwistData(**{field.name: getattr(self, field.name) * other for field in self.__dataclass_fields__.values()})
     
 @dataclass(slots=True)
 class State:
-    pose: Pose
-    twist: Twist
+    pose: PoseData
+    twist: TwistData
 
     def __add__(self, other: "State") -> "State":
         return State(pose=self.pose + other.pose, twist=self.twist + other.twist)
