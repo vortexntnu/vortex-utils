@@ -69,8 +69,8 @@ class TwistData:
     
 @dataclass(slots=True)
 class State:
-    pose: PoseData
-    twist: TwistData
+    pose: PoseData = PoseData()
+    twist: TwistData = TwistData()
 
     def __add__(self, other: "State") -> "State":
         return State(pose=self.pose + other.pose, twist=self.twist + other.twist)
