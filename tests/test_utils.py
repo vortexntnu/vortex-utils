@@ -1,11 +1,22 @@
+import numpy as np
 import pytest
-from vortex_utils.python_utils import *
+
+from vortex_utils.python_utils import (
+    PoseData,
+    State,
+    TwistData,
+    euler_to_quat,
+    quat_to_euler,
+    ssa,
+)
+
 
 def test_ssa():
     assert ssa(0) == 0
     assert ssa(2 * np.pi) == 0
     assert ssa(3.5) == pytest.approx(-2.78, abs=0.01)
     assert ssa(-3.5) == pytest.approx(2.78, abs=0.01)
+
 
 def test_euler_to_quat():
     quat = euler_to_quat(0, 0, 0)
@@ -19,6 +30,7 @@ def test_euler_to_quat():
     quat = euler_to_quat(1, 1, 1)
     assert quat == pytest.approx([0.5709, 0.167, 0.5709, 0.565], abs=0.01)
 
+
 def test_quat_to_euler():
     euler = quat_to_euler(0, 0, 0, 1)
     assert euler == pytest.approx([0, 0, 0], abs=0.01)
@@ -30,6 +42,7 @@ def test_quat_to_euler():
     assert euler == pytest.approx([1, 1, 0], abs=0.01)
     euler = quat_to_euler(0.4207, -0.4207, -0.229, 0.770)
     assert euler == pytest.approx([1, -1, 0], abs=0.01)
+
 
 def test_pose():
     pose = PoseData(1, 2, 3, 0.1, 0.2, 0.3)
@@ -59,9 +72,16 @@ def test_pose():
 
     pose = PoseData(1, 2, 3, 0.5, -0.5, 0.9)
     rotation_matrix = pose.as_rotation_matrix()
-    assert rotation_matrix[0] == pytest.approx([ 0.54551407, -0.68743404, -0.47942554], abs=0.001)
-    assert rotation_matrix[1] == pytest.approx([ 0.5445577,   0.72556086, -0.42073549], abs=0.001)
-    assert rotation_matrix[2] == pytest.approx([ 0.6370803,  -0.03155774,  0.77015115], abs=0.001)
+    assert rotation_matrix[0] == pytest.approx(
+        [0.54551407, -0.68743404, -0.47942554], abs=0.001
+    )
+    assert rotation_matrix[1] == pytest.approx(
+        [0.5445577, 0.72556086, -0.42073549], abs=0.001
+    )
+    assert rotation_matrix[2] == pytest.approx(
+        [0.6370803, -0.03155774, 0.77015115], abs=0.001
+    )
+
 
 def test_twist():
     twist1 = TwistData(1, 2, 3, 0.1, 0.2, 0.3)
@@ -69,6 +89,7 @@ def test_twist():
     assert (twist1 + twist2) == TwistData(1.1, 2.2, 3.3, 0.2, 0.4, 0.6)
     assert (twist1 - twist2) == TwistData(0.9, 1.8, 2.7, 0, 0, 0)
     assert (twist1 * 2) == TwistData(2, 4, 6, 0.2, 0.4, 0.6)
+
 
 def test_state():
     pose1 = PoseData(1, 2, 3, 0.1, 0.2, 0.3)
