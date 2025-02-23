@@ -140,11 +140,11 @@ class H264Decoder:
             H264Decoder._gst_initialized = True
 
         pipeline_desc = (
-            "appsrc name=mysrc is-live=true ! "  # Receive raw H.264 stream data
-            "h264parse ! "  # Parse the H.264 stream
-            "avdec_h264 ! "  # Decode H.264 frames
-            "videoconvert ! video/x-raw,format=BGR ! "  # Convert frames to BGR format
-            "appsink name=appsink"  # Sink for retrieving processed frames
+            "appsrc name=mysrc is-live=true ! "
+            "h264parse ! "
+            "avdec_h264 ! "
+            "videoconvert ! video/x-raw,format=BGR ! "
+            "appsink name=appsink"
         )
 
         self._pipeline = Gst.parse_launch(pipeline_desc)
@@ -162,6 +162,7 @@ class H264Decoder:
         self._main_loop = None
 
         self.decoded_frames = []
+        self.max_frames = 3  # Keep only the last 3 frames here
 
     def start(self):
         """Starts the GStreamer pipeline and runs the main event loop."""
@@ -186,7 +187,7 @@ class H264Decoder:
         """Pushes H.264 encoded data into the pipeline for decoding."""
         if not self.appsrc:
             raise RuntimeError(
-                "The pipeline's appsrc element was not found or not initialized."
+                "The pipeline's appsrc element was not found or initialized."
             )
         gst_buffer = Gst.Buffer.new_allocate(None, len(data), None)
         gst_buffer.fill(0, data)
@@ -223,6 +224,9 @@ class H264Decoder:
         frame_data_reshaped = frame_data.reshape((height, width, channels))
 
         self.decoded_frames.append(frame_data_reshaped.copy())
+
+        if len(self.decoded_frames) > self.max_frames:
+            self.decoded_frames.pop(0)
 
         buf.unmap(map_info)
         return Gst.FlowReturn.OK
