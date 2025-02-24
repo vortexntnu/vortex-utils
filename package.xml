@@ -12,6 +12,7 @@
 
   <depend>eigen</depend>
   <depend>python3-numpy</depend>
+  <depend>python3-scipy</depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
 
