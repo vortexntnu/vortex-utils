@@ -22,9 +22,7 @@ TEST(ssa, test_ssa_minus_3_5) {
 TEST(skew_symmetric, test_skew_symmetric) {
     Eigen::Vector3d vector(1, 2, 3);
     Eigen::Matrix3d expected;
-    expected << 0, -3,  2, 
-                 3,  0, -1, 
-                -2,  1,  0;
+    expected << 0, -3, 2, 3, 0, -1, -2, 1, 0;
 
     Eigen::Matrix3d result = skew_symmetric(vector);
     EXPECT_EQ(expected, result);
@@ -77,7 +75,7 @@ TEST(quat_to_euler, test_quat_to_euler_5) {
 
 }  // namespace vortex_utils
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
