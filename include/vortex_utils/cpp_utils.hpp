@@ -9,13 +9,18 @@ typedef Eigen::Matrix<double, 3, 3> Matrix3d;
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
 
 namespace vortex_utils {
-// @brief Function to calculate the smallest signed angle between two angles
+// @brief Function to calculate the smallest signed angle between two angles.
+// Maps the angle to the interval [-pi, pi].
 double ssa(const double angle);
 
+// @brief Calculates the skew-symmetric matrix from a 3D vector.
 Matrix3d skew_symmetric(const Eigen::Vector3d& vector);
 
+// @brief Converts a quaternion to Euler angles.
 Eigen::Vector3d quat_to_euler(const Eigen::Quaterniond& q);
 
+// @brief Struct to represent the state vector eta,
+// containing the position and orientation.
 struct Eta {
     double x = 0.0;
     double y = 0.0;
