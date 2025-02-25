@@ -127,9 +127,9 @@ def test_h264_decoder():
 
     decoding_thread.join(timeout=5.0)
 
-    assert (
-        len(decoder.decoded_frames) > 0
-    ), "No frames were decoded from the H.264 stream."
+    assert len(decoder.decoded_frames) > 0, (
+        "No frames were decoded from the H.264 stream."
+    )
 
     frame = decoder.decoded_frames[0]
     assert isinstance(frame, np.ndarray), "Decoded frame is not a numpy array."
