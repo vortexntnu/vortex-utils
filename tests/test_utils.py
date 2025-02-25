@@ -157,6 +157,18 @@ def test_twist_multiplication_scalar():
     assert (twist1 * 2) == TwistData(2, 4, 6, 0.2, 0.4, 0.6)
 
 
+def test_twist_multiplication_twist():
+    twist1 = TwistData(1, 2, 3, 0.1, 0.2, 0.3)
+    twist2 = TwistData(0.1, 0.2, 0.3, 0.1, 0.2, 0.3)
+    twist3 = twist1 * twist2
+    assert twist3.linear_x == pytest.approx(0.1, abs=0.01)
+    assert twist3.linear_y == pytest.approx(0.4, abs=0.01)
+    assert twist3.linear_z == pytest.approx(0.9, abs=0.01)
+    assert twist3.angular_x == pytest.approx(0.01, abs=0.001)
+    assert twist3.angular_y == pytest.approx(0.04, abs=0.001)
+    assert twist3.angular_z == pytest.approx(0.09, abs=0.001)
+
+
 def test_state_addition_pose():
     pose1 = PoseData(1, 2, 3, 0.1, 0.2, 0.3)
     twist1 = TwistData(1, 2, 3, 0.1, 0.2, 0.3)
