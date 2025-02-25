@@ -21,9 +21,13 @@ echo "export QT_QPA_PLATFORM=xcb"
 ### PyGObject Installation ###
 echo "Installing PyGObject dependencies..."
 sudo apt install -y libglib2.0-dev libcairo2-dev libgirepository1.0-dev \
-    gir1.2-gtk-3.0 python3-dev
+    gir1.2-gtk-3.0 python3-dev ninja-build
+
+echo "Ensuring latest Meson version is installed..."
+pip install --upgrade meson
 
 echo "Installing PyGObject via pip..."
-pip install pygobject
+pip install pycairo --no-cache-dir
+pip install pygobject --no-cache-dir
 
 echo "Installation of all dependencies completed successfully."
