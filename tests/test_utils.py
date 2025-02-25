@@ -1,8 +1,11 @@
+import threading
+
 import numpy as np
 import pytest
 from geometry_msgs.msg import Pose, Twist
 
 from vortex_utils.python_utils import (
+    H264Decoder,
     PoseData,
     State,
     TwistData,
@@ -209,6 +212,35 @@ def test_state_subtraction_twist():
     twist2 = TwistData(0.1, 0.2, 0.3, 0.1, 0.2, 0.3)
     state2 = State(pose2, twist2)
     assert (state1 - state2).twist == TwistData(0.9, 1.8, 2.7, 0, 0, 0)
+
+
+def test_h264_decoder():
+    test_file = "tests/resources/test_video.h264"
+
+    decoder = H264Decoder()
+
+    decoding_thread = threading.Thread(target=decoder.start, daemon=True)
+    decoding_thread.start()
+
+    with open(test_file, "rb") as f:
+        raw_data = f.read()
+
+    chunk_size = 64
+    for i in range(0, len(raw_data), chunk_size):
+        chunk = raw_data[i : i + chunk_size]
+        decoder.push_data(chunk)
+
+    decoder.appsrc.emit("end-of-stream")
+
+    decoding_thread.join(timeout=5.0)
+
+    assert len(decoder.decoded_frames) > 0, (
+        "No frames were decoded from the H.264 stream."
+    )
+
+    frame = decoder.decoded_frames[0]
+    assert isinstance(frame, np.ndarray), "Decoded frame is not a numpy array."
+    assert frame.ndim == 3, f"Expected 3D array (H, W, Channels), got {frame.shape}"
 
 
 def test_pose_from_ros():

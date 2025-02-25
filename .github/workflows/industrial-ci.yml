@@ -11,3 +11,4 @@ jobs:
     uses: vortexntnu/vortex-ci/.github/workflows/reusable-industrial-ci.yml@main
     with:
       ros_repo: '["main", "testing"]'
+      before_install_target_dependencies: 'scripts/ci_install_dependencies.sh'
