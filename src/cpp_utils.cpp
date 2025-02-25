@@ -2,7 +2,8 @@
 
 namespace vortex_utils {
 double ssa(const double angle) {
-    double angle_ssa = fmod(angle + M_PI, 2 * M_PI) - M_PI;
+    double result = fmod(angle + M_PI, 2 * M_PI);
+    double angle_ssa = result < 0 ? result + M_PI : result - M_PI;
     return angle_ssa;
 }
 
