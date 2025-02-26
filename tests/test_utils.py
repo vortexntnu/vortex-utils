@@ -1,11 +1,13 @@
 import threading
+import time
 
 import numpy as np
 import pytest
 from geometry_msgs.msg import Pose, Twist
+from gi.repository import Gst
 
+from vortex_utils.gst_utils import H264Decoder
 from vortex_utils.python_utils import (
-    H264Decoder,
     PoseData,
     State,
     TwistData,
@@ -214,33 +216,81 @@ def test_state_subtraction_twist():
     assert (state1 - state2).twist == TwistData(0.9, 1.8, 2.7, 0, 0, 0)
 
 
-def test_h264_decoder():
-    test_file = "tests/resources/test_video.h264"
-
+@pytest.fixture
+def decoder():
+    """Fixture to create and clean up an H264Decoder instance."""
     decoder = H264Decoder()
-
     decoding_thread = threading.Thread(target=decoder.start, daemon=True)
     decoding_thread.start()
+    yield decoder
+    decoder.stop()
+    decoding_thread.join()
 
+
+def test_h264_decoder_initialization(decoder):
+    """Test that the H264Decoder initializes correctly."""
+    assert decoder.appsrc is not None, "Appsrc element is missing."
+    assert decoder._appsink is not None, "Appsink element is missing."
+    assert decoder._pipeline is not None, "Pipeline was not initialized."
+    assert decoder._bus is not None, "GStreamer bus was not initialized."
+
+
+def test_h264_decoder_decodes_frames(decoder):
+    """Test if the decoder correctly processes an H.264 stream."""
+    test_file = "tests/resources/test_video.h264"
+
+    # Read and push H.264 data
     with open(test_file, "rb") as f:
         raw_data = f.read()
 
     chunk_size = 64
     for i in range(0, len(raw_data), chunk_size):
-        chunk = raw_data[i : i + chunk_size]
-        decoder.push_data(chunk)
+        decoder.push_data(raw_data[i : i + chunk_size])
 
     decoder.appsrc.emit("end-of-stream")
 
-    decoding_thread.join(timeout=5.0)
+    # Wait for frames to be decoded
+    timeout = 5.0
+    start_time = time.time()
+    while len(decoder.decoded_frames) == 0 and (time.time() - start_time) < timeout:
+        time.sleep(0.1)
 
-    assert len(decoder.decoded_frames) > 0, (
-        "No frames were decoded from the H.264 stream."
-    )
+    assert len(decoder.decoded_frames) > 0, "No frames were decoded."
+
+
+def test_h264_decoder_frame_properties(decoder):
+    """Test if decoded frames have correct properties."""
+    test_file = "tests/resources/test_video.h264"
+
+    # Read and push H.264 data
+    with open(test_file, "rb") as f:
+        raw_data = f.read()
+
+    chunk_size = 64
+    for i in range(0, len(raw_data), chunk_size):
+        decoder.push_data(raw_data[i : i + chunk_size])
+
+    decoder.appsrc.emit("end-of-stream")
+
+    # Wait for frames to be decoded
+    timeout = 5.0
+    start_time = time.time()
+    while len(decoder.decoded_frames) == 0 and (time.time() - start_time) < timeout:
+        time.sleep(0.1)
+
+    assert len(decoder.decoded_frames) > 0, "No frames were decoded."
 
     frame = decoder.decoded_frames[0]
     assert isinstance(frame, np.ndarray), "Decoded frame is not a numpy array."
-    assert frame.ndim == 3, f"Expected 3D array (H, W, Channels), got {frame.shape}"
+    assert frame.ndim == 3, f"Expected 3D array (H, W, C), got shape {frame.shape}."
+
+
+def test_h264_decoder_stops_cleanly(decoder):
+    """Test if the decoder stops without errors."""
+    decoder.stop()
+    assert decoder._pipeline.get_state(0)[1] == Gst.State.NULL, (
+        "Decoder did not shut down properly."
+    )
 
 
 def test_pose_from_ros():
