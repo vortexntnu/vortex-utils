@@ -8,11 +8,16 @@ def ssa(angle: float) -> float:
     return (angle + np.pi) % (2 * np.pi) - np.pi
 
 
-def euler_to_quat(roll: float, pitch: float, yaw: float, *, degrees: bool = False) -> np.ndarray:
+def euler_to_quat(
+    roll: float, pitch: float, yaw: float, *, degrees: bool = False
+) -> np.ndarray:
     """RPY (intrinsic x-y-z) -> quaternion (x, y, z, w)."""
     return Rotation.from_euler('xyz', [roll, pitch, yaw], degrees=degrees).as_quat()
 
-def quat_to_euler(x: float, y: float, z: float, w: float, *, degrees: bool = False) -> np.ndarray:
+
+def quat_to_euler(
+    x: float, y: float, z: float, w: float, *, degrees: bool = False
+) -> np.ndarray:
     """Quaternion (x, y, z, w) -> RPY (intrinsic x-y-z)."""
     return Rotation.from_quat([x, y, z, w]).as_euler('xyz', degrees=degrees)
 
