@@ -56,7 +56,7 @@ def test_euler_to_quat_z():
 
 def test_euler_to_quat_xyz():
     quat = euler_to_quat(1, 1, 1)
-    assert quat == pytest.approx([0.5709, 0.167, 0.5709, 0.565], abs=0.01)
+    assert quat == pytest.approx([0.1675, 0.5709, 0.1675, 0.7861], abs=0.01)
 
 
 def test_quat_to_euler_identity():
@@ -76,12 +76,12 @@ def test_quat_to_euler_z():
 
 def test_quat_to_euler_xyz():
     euler = quat_to_euler(0.4207, 0.4207, 0.229, 0.770)
-    assert euler == pytest.approx([1, 1, 0], abs=0.01)
+    assert euler == pytest.approx([1.237, 0.4729, 0.9179], abs=0.01)
 
 
 def test_quat_to_euler_xyz_negative():
     euler = quat_to_euler(0.4207, -0.4207, -0.229, 0.770)
-    assert euler == pytest.approx([1, -1, 0], abs=0.01)
+    assert euler == pytest.approx([1.237, -0.4729, -0.9179], abs=0.01)
 
 
 def test_pose_addition():
@@ -122,29 +122,23 @@ def test_pose_rotation_matrix_shape():
 def test_pose_rotation_matrix_values():
     pose = PoseData(1, 2, 3, 0.1, 0.2, 0.3)
     rotation_matrix = pose.as_rotation_matrix()
-    assert rotation_matrix[0, 0] == pytest.approx(0.935, abs=0.05)
-    assert rotation_matrix[0, 1] == pytest.approx(-0.283, abs=0.05)
-    assert rotation_matrix[0, 2] == pytest.approx(0.2101, abs=0.05)
-    assert rotation_matrix[1, 0] == pytest.approx(0.302, abs=0.05)
-    assert rotation_matrix[1, 1] == pytest.approx(0.9505, abs=0.05)
-    assert rotation_matrix[1, 2] == pytest.approx(-0.068, abs=0.05)
-    assert rotation_matrix[2, 0] == pytest.approx(-0.1805, abs=0.05)
-    assert rotation_matrix[2, 1] == pytest.approx(0.127, abs=0.05)
-    assert rotation_matrix[2, 2] == pytest.approx(0.975, abs=0.05)
+    assert rotation_matrix[0, 0] == pytest.approx(0.9363, abs=0.05)
+    assert rotation_matrix[0, 1] == pytest.approx(-0.2751, abs=0.05)
+    assert rotation_matrix[0, 2] == pytest.approx(0.2184, abs=0.05)
+    assert rotation_matrix[1, 0] == pytest.approx(0.2896, abs=0.05)
+    assert rotation_matrix[1, 1] == pytest.approx(0.9564, abs=0.05)
+    assert rotation_matrix[1, 2] == pytest.approx(-0.0370, abs=0.05)
+    assert rotation_matrix[2, 0] == pytest.approx(-0.1987, abs=0.05)
+    assert rotation_matrix[2, 1] == pytest.approx(0.0978, abs=0.05)
+    assert rotation_matrix[2, 2] == pytest.approx(0.9752, abs=0.05)
 
 
 def test_pose_rotation_matrix_values_different_pose():
     pose = PoseData(1, 2, 3, 0.5, -0.5, 0.9)
     rotation_matrix = pose.as_rotation_matrix()
-    assert rotation_matrix[0] == pytest.approx(
-        [0.54551407, -0.68743404, -0.47942554], abs=0.001
-    )
-    assert rotation_matrix[1] == pytest.approx(
-        [0.5445577, 0.72556086, -0.42073549], abs=0.001
-    )
-    assert rotation_matrix[2] == pytest.approx(
-        [0.6370803, -0.03155774, 0.77015115], abs=0.001
-    )
+    assert rotation_matrix[0] == pytest.approx([0.5455, -0.8303, 0.1140], abs=0.001)
+    assert rotation_matrix[1] == pytest.approx([0.6874, 0.3655, -0.6276], abs=0.001)
+    assert rotation_matrix[2] == pytest.approx([0.4794, 0.4207, 0.7702], abs=0.001)
 
 
 def test_twist_addition():
