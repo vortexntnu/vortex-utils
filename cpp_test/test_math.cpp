@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <vortex_utils/cpp_utils.hpp>
+#include "vortex_utils/math.hpp"
 
-namespace vortex_utils {
+namespace vortex::utils::math {
 
 // Test that the value does not change when already in the interval [-pi, pi]
 TEST(ssa, test_ssa_0) {
@@ -82,9 +82,4 @@ TEST(quat_to_euler, test_quat_to_euler_5) {
     }
 }
 
-}  // namespace vortex_utils
-
-int main(int argc, char** argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+}  // namespace vortex::utils::math

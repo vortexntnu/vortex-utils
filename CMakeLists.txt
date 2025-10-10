@@ -35,27 +35,18 @@ ament_export_libraries(${PROJECT_NAME})
 ament_python_install_package(${PROJECT_NAME})
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_pytest REQUIRED)
-  set(_pytest_tests
-    tests/test_utils.py
-  )
-  foreach(_test_path ${_pytest_tests})
-    get_filename_component(_test_name ${_test_path} NAME_WE)
-    ament_add_pytest_test(${_test_name} ${_test_path}
-      APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
-  endforeach()
+  add_subdirectory(py_test)
+  add_subdirectory(cpp_test)
 
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(${PROJECT_NAME}_test
-    test/test_cpp_utils.cpp
-  )
-  target_include_directories(${PROJECT_NAME}_test PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-  )
-  target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
+  # find_package(ament_cmake_gtest REQUIRED)
+  # ament_add_gtest(${PROJECT_NAME}_test
+  #   test/test_math.cpp
+  # )
+  # target_include_directories(${PROJECT_NAME}_test PUBLIC
+  #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  #   $<INSTALL_INTERFACE:include>
+  # )
+  # target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
 
 endif()
 
