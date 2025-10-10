@@ -37,17 +37,6 @@ ament_python_install_package(${PROJECT_NAME})
 if(BUILD_TESTING)
   add_subdirectory(py_test)
   add_subdirectory(cpp_test)
-
-  # find_package(ament_cmake_gtest REQUIRED)
-  # ament_add_gtest(${PROJECT_NAME}_test
-  #   test/test_math.cpp
-  # )
-  # target_include_directories(${PROJECT_NAME}_test PUBLIC
-  #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  #   $<INSTALL_INTERFACE:include>
-  # )
-  # target_link_libraries(${PROJECT_NAME}_test ${PROJECT_NAME})
-
 endif()
 
 ament_package()
