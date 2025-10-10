@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(vortex_utils)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+set(CMAKE_CXX_STANDARD 17)
+add_compile_options(-Wall -Wextra -Wpedantic)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
@@ -11,7 +10,7 @@ find_package(Eigen3 REQUIRED)
 
 include_directories(include)
 
-add_library(${PROJECT_NAME} src/cpp_utils.cpp)
+add_library(${PROJECT_NAME} src/math.cpp)
 
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
 

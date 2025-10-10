@@ -1,14 +1,14 @@
-#include "vortex_utils/cpp_utils.hpp"
+#include "vortex_utils/math.hpp"
 
-namespace vortex_utils {
+namespace vortex::utils::math {
+
 double ssa(const double angle) {
-    double result = fmod(angle + M_PI, 2 * M_PI);
-    double angle_ssa = result < 0 ? result + M_PI : result - M_PI;
-    return angle_ssa;
+    double angle_ssa { fmod(angle + M_PI, 2 * M_PI) };
+    return angle_ssa < 0 ? angle_ssa + M_PI : angle_ssa - M_PI;
 }
 
-Matrix3d skew_symmetric(const Eigen::Vector3d& vector) {
-    Matrix3d skew_symmetric_matrix;
+Eigen::Matrix3d skew_symmetric(const Eigen::Vector3d& vector) {
+    Eigen::Matrix3d skew_symmetric_matrix;
     skew_symmetric_matrix << 0, -vector.z(), vector.y(), vector.z(), 0,
         -vector.x(), -vector.y(), vector.x(), 0;
     return skew_symmetric_matrix;
@@ -19,4 +19,4 @@ Eigen::Vector3d quat_to_euler(const Eigen::Quaterniond& q) {
     return euler_angles;
 }
 
-}  // namespace vortex_utils
+}  // namespace vortex::utils::math
