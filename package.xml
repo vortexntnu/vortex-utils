@@ -10,7 +10,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
-  <depend>eigen</depend>
+  <depend>rclcpp</depend>
   <depend>python3-numpy</depend>
   <depend>python3-scipy</depend>
   <depend>geometry_msgs</depend>
