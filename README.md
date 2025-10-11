@@ -25,6 +25,6 @@ for mathematical functions,
 ```
 for common QoS profile definitions, and
 ```C++
-#include <vortex/utils/types>
+#include <vortex/utils/types.hpp>
 ```
 for common structs like 6DOF `Eta` and `Nu`.
