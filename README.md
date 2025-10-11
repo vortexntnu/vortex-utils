@@ -11,6 +11,9 @@ In Python, import your desired function/dataclass like for example:
 ```python
 from vortex_utils.python_utils import ssa
 ```
+```python
+from vortex_utils.qos_profiles import sensor_data_profile, reliable_profile
+```
 
 In C++, include
 ```C++
