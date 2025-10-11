@@ -17,14 +17,14 @@ from vortex_utils.qos_profiles import sensor_data_profile, reliable_profile
 
 In C++, include
 ```C++
-#include <vortex_utils/math.hpp>
+#include <vortex/utils/math.hpp>
 ```
 for mathematical functions,
 ```C++
-#include <vortex_utils/qos_profiles.hpp>
+#include <vortex/utils/qos_profiles.hpp>
 ```
 for common QoS profile definitions, and
 ```C++
-#include <vortex_utils/types>
+#include <vortex/utils/types>
 ```
 for common structs like 6DOF `Eta` and `Nu`.

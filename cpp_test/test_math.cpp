@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "vortex_utils/math.hpp"
+#include "vortex/utils/math.hpp"
 
 namespace vortex::utils::math {
 
