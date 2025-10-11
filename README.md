@@ -25,4 +25,3 @@ for common QoS profile definitions, and
 #include <vortex_utils/types>
 ```
 for common structs like 6DOF `Eta` and `Nu`.
-and in the code
