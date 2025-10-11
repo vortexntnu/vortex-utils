@@ -5,17 +5,16 @@
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 
-namespace Eigen {
-typedef Eigen::Matrix<double, 6, 6> Matrix6d;
-typedef Eigen::Matrix<double, 3, 3> Matrix3d;
-typedef Eigen::Matrix<double, 6, 1> Vector6d;
-}  // namespace Eigen
-
 namespace vortex::utils::math {
 
 // @brief Function to calculate the smallest signed angle between two angles.
 // Maps the angle to the interval [-pi, pi].
 double ssa(const double angle);
+
+// @brief Helper to calculate error between two matrices
+inline double matrix_norm_diff(Eigen::MatrixXd m1, Eigen::MatrixXd m2) {
+    return (m1 - m2).norm();
+}
 
 // @brief Calculates the skew-symmetric matrix from a 3D vector.
 Eigen::Matrix3d get_skew_symmetric_matrix(const Eigen::Vector3d& vector);

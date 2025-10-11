@@ -2,7 +2,11 @@
 #define VORTEX_UTILS_TYPES_HPP
 
 #include <eigen3/Eigen/Dense>
-#include "vortex_utils/math.hpp"
+
+namespace Eigen {
+typedef Eigen::Matrix<double, 6, 6> Matrix6d;
+typedef Eigen::Matrix<double, 6, 1> Vector6d;
+}  // namespace Eigen
 
 namespace vortex::utils::types {
 

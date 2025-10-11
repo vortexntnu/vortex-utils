@@ -7,6 +7,7 @@ set(TEST_BINARY_NAME ${PROJECT_NAME}_test)
 add_executable(
     ${TEST_BINARY_NAME}
     test_math.cpp
+    test_types.cpp
 )
 
 target_link_libraries(

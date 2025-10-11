@@ -23,11 +23,6 @@ TEST(ssa, test_ssa_minus_3_5) {
     EXPECT_NEAR(2.78, ssa(-3.5), 0.01);
 }
 
-// @brief Helper to calculate error between two matrices
-inline double matrix_norm_diff(Eigen::Matrix3d m1, Eigen::Matrix3d m2) {
-    return (m1 - m2).norm();
-}
-
 // Test that the skew-symmetric matrix is correctly calculated
 TEST(get_skew_symmetric_matrix, test_skew_symmetric) {
     Eigen::Vector3d vector(1, 2, 3);
