@@ -1,20 +1,20 @@
 #ifndef VORTEX_UTILS_TYPES_HPP
 #define VORTEX_UTILS_TYPES_HPP
 
-#include "vortex_utils/math.hpp"
 #include <eigen3/Eigen/Dense>
+#include "vortex_utils/math.hpp"
 
 namespace vortex::utils::types {
 
 // @brief Struct to represent the state vector eta,
 // containing the position and orientation.
 struct Eta {
-    double x {};
-    double y {};
-    double z {};
-    double roll {};
-    double pitch {};
-    double yaw {};
+    double x{};
+    double y{};
+    double z{};
+    double roll{};
+    double pitch{};
+    double yaw{};
 
     Eta operator-(const Eta& other) const {
         Eta eta;
@@ -88,12 +88,12 @@ struct Eta {
 };
 
 struct Nu {
-    double u {};
-    double v {};
-    double w {};
-    double p {};
-    double q {};
-    double r {};
+    double u{};
+    double v{};
+    double w{};
+    double p{};
+    double q{};
+    double r{};
 
     Nu operator-(const Nu& other) const {
         Nu nu;

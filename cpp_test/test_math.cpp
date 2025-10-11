@@ -40,20 +40,20 @@ TEST(get_skew_symmetric_matrix, test_skew_symmetric) {
 
 // Test that rotation matrix is correctly constructed
 TEST(get_rotation_matrix, test_rotation_matrix) {
-    double roll { 1.0 };
-    double pitch { 2.0 };
-    double yaw { 3.0 };
+    double roll{1.0};
+    double pitch{2.0};
+    double yaw{3.0};
     Eigen::Matrix3d expected;
-    expected << 0.41198225, -0.83373765, -0.36763046, 
-               -0.05872664, -0.42691762,  0.90238159,
-               -0.90929743, -0.35017549, -0.2248451;
+    expected << 0.41198225, -0.83373765, -0.36763046, -0.05872664, -0.42691762,
+        0.90238159, -0.90929743, -0.35017549, -0.2248451;
     Eigen::Matrix3d result = get_rotation_matrix(roll, pitch, yaw);
     EXPECT_NEAR(0.0, matrix_norm_diff(expected, result), 0.01);
 }
 
 TEST(get_transformation_matrix_attitude, test_transformation_matrix_zeros) {
-    Eigen::Matrix3d transformation_matrix { get_transformation_matrix_attitude(0.0, 0.0) };
-    Eigen::Matrix3d expected { Eigen::Matrix3d::Identity() };
+    Eigen::Matrix3d transformation_matrix{
+        get_transformation_matrix_attitude(0.0, 0.0)};
+    Eigen::Matrix3d expected{Eigen::Matrix3d::Identity()};
     EXPECT_NEAR(0.0, matrix_norm_diff(expected, transformation_matrix), 0.01);
 }
 
@@ -97,7 +97,8 @@ TEST(quat_to_euler, test_quat_to_euler_4) {
     }
 }
 
-// Test that a quaternion with flipped signs is correctly convverted to euler angles
+// Test that a quaternion with flipped signs is correctly convverted to euler
+// angles
 TEST(quat_to_euler, test_quat_to_euler_5) {
     Eigen::Quaterniond q5(0.770, 0.4207, 0.4207, 0.229);
     Eigen::Vector3d expected5(1.237, 0.4729, 0.9179);
@@ -109,12 +110,12 @@ TEST(quat_to_euler, test_quat_to_euler_5) {
 
 // Test that zero euler angles construct the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_1) {
-    double roll {};
-    double pitch {};
-    double yaw {};
-    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
-    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
-    Eigen::Vector4d expected { 0.0, 0.0, 0.0, 1.0 };
+    double roll{};
+    double pitch{};
+    double yaw{};
+    Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
+    Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    Eigen::Vector4d expected{0.0, 0.0, 0.0, 1.0};
     for (int i = 0; i < 3; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
@@ -122,12 +123,12 @@ TEST(euler_to_quat, test_euler_to_quat_1) {
 
 // Test that non-zero roll constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_2) {
-    double roll { 1.0 };
-    double pitch {};
-    double yaw {};
-    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
-    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
-    Eigen::Vector4d expected { 0.479, 0.0, 0.0, 0.877 };
+    double roll{1.0};
+    double pitch{};
+    double yaw{};
+    Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
+    Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    Eigen::Vector4d expected{0.479, 0.0, 0.0, 0.877};
     for (int i = 0; i < 3; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
@@ -135,12 +136,12 @@ TEST(euler_to_quat, test_euler_to_quat_2) {
 
 // Test that non-zero pitch constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_3) {
-    double roll {};
-    double pitch { 1.0 };
-    double yaw {};
-    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
-    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
-    Eigen::Vector4d expected { 0.0, 0.479, 0.0, 0.877 };
+    double roll{};
+    double pitch{1.0};
+    double yaw{};
+    Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
+    Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    Eigen::Vector4d expected{0.0, 0.479, 0.0, 0.877};
     for (int i = 0; i < 3; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
@@ -148,12 +149,12 @@ TEST(euler_to_quat, test_euler_to_quat_3) {
 
 // Test that non-zero yaw constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_4) {
-    double roll {};
-    double pitch {};
-    double yaw { 1.0 };
-    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
-    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
-    Eigen::Vector4d expected { 0.0, 0.0, 0.479, 0.877 };
+    double roll{};
+    double pitch{};
+    double yaw{1.0};
+    Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
+    Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    Eigen::Vector4d expected{0.0, 0.0, 0.479, 0.877};
     for (int i = 0; i < 3; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
@@ -161,12 +162,12 @@ TEST(euler_to_quat, test_euler_to_quat_4) {
 
 // Test that non-zero euler angles constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_5) {
-    double roll { 1.0 };
-    double pitch { 1.0 };
-    double yaw { 1.0 };
-    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
-    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
-    Eigen::Vector4d expected { 0.1675, 0.5709, 0.1675, 0.786 };
+    double roll{1.0};
+    double pitch{1.0};
+    double yaw{1.0};
+    Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
+    Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    Eigen::Vector4d expected{0.1675, 0.5709, 0.1675, 0.786};
     for (int i = 0; i < 3; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }

@@ -26,4 +26,3 @@ for common QoS profile definitions, and
 ```
 for common structs like 6DOF `Eta` and `Nu`.
 and in the code
-
