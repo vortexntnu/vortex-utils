@@ -23,6 +23,28 @@ Eigen::Matrix3d get_rotation_matrix(const double roll, const double pitch, const
     return rotation_matrix;
 }
 
+Eigen::Matrix3d get_transformation_matrix_attitude(const double roll, const double pitch) {
+    double sin_r = sin(roll);
+    double cos_r = cos(roll);
+    double cos_p = cos(pitch);
+    if (cos_p == 0) {
+        throw std::runtime_error("Singular pitch");
+    }
+    double tan_p = tan(pitch);
+
+    Eigen::Matrix3d transformation_matrix;
+    transformation_matrix(0, 0) = 1;
+    transformation_matrix(0, 1) = sin_r * tan_p;
+    transformation_matrix(0, 2) = cos_r * tan_p;
+    transformation_matrix(1, 0) = 0;
+    transformation_matrix(1, 1) = cos_r;
+    transformation_matrix(1, 2) = -sin_r;
+    transformation_matrix(2, 0) = 0;
+    transformation_matrix(2, 1) = sin_r / cos_p;
+    transformation_matrix(2, 2) = cos_r / cos_p;
+    return transformation_matrix;
+}
+
 Eigen::Vector3d quat_to_euler(const Eigen::Quaterniond& q) {
     Eigen::Matrix3d rotation_matrix = q.toRotationMatrix();
     if (std::fabs(rotation_matrix(2, 0)) > 1.0) {

@@ -51,6 +51,12 @@ TEST(get_rotation_matrix, test_rotation_matrix) {
     EXPECT_NEAR(0.0, matrix_norm_diff(expected, result), 0.01);
 }
 
+TEST(get_transformation_matrix_attitude, test_transformation_matrix_zeros) {
+    Eigen::Matrix3d transformation_matrix { get_transformation_matrix_attitude(0.0, 0.0) };
+    Eigen::Matrix3d expected { Eigen::Matrix3d::Identity() };
+    EXPECT_NEAR(0.0, matrix_norm_diff(expected, transformation_matrix), 0.01);
+}
+
 // Test that the identity quaternion correctly maps to 0, 0, 0
 TEST(quat_to_euler, test_quat_to_euler_1) {
     Eigen::Quaterniond q(1.0, 0.0, 0.0, 0.0);

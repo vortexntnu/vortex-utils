@@ -20,7 +20,11 @@ double ssa(const double angle);
 // @brief Calculates the skew-symmetric matrix from a 3D vector.
 Eigen::Matrix3d get_skew_symmetric_matrix(const Eigen::Vector3d& vector);
 
+// @brief Rotation matrix from Eigen quat
 Eigen::Matrix3d get_rotation_matrix(const double roll, const double pitch, const double yaw);
+
+// @brief Fossen, 2021 eq. 2.41
+Eigen::Matrix3d get_transformation_matrix_attitude(const double roll, const double pitch);
 
 // @brief Converts a quaternion to Euler angles.
 Eigen::Vector3d quat_to_euler(const Eigen::Quaterniond& q);
