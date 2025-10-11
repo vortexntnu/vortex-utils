@@ -38,6 +38,7 @@ TEST(get_skew_symmetric_matrix, test_skew_symmetric) {
     EXPECT_EQ(expected, result);
 }
 
+// Test that rotation matrix is correctly constructed
 TEST(get_rotation_matrix, test_rotation_matrix) {
     double roll { 1.0 };
     double pitch { 2.0 };
@@ -80,6 +81,7 @@ TEST(quat_to_euler, test_quat_to_euler_3) {
     }
 }
 
+// Test that a quaternion is correctly converted to euler angles
 TEST(quat_to_euler, test_quat_to_euler_4) {
     Eigen::Quaterniond q5(0.770, 0.4207, -0.4207, -0.229);
     Eigen::Vector3d expected5(1.237, -0.4729, -0.9179);
@@ -89,6 +91,7 @@ TEST(quat_to_euler, test_quat_to_euler_4) {
     }
 }
 
+// Test that a quaternion with flipped signs is correctly convverted to euler angles
 TEST(quat_to_euler, test_quat_to_euler_5) {
     Eigen::Quaterniond q5(0.770, 0.4207, 0.4207, 0.229);
     Eigen::Vector3d expected5(1.237, 0.4729, 0.9179);
@@ -98,6 +101,7 @@ TEST(quat_to_euler, test_quat_to_euler_5) {
     }
 }
 
+// Test that zero euler angles construct the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_1) {
     double roll {};
     double pitch {};
@@ -110,6 +114,7 @@ TEST(euler_to_quat, test_euler_to_quat_1) {
     }
 }
 
+// Test that non-zero roll constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_2) {
     double roll { 1.0 };
     double pitch {};
@@ -122,6 +127,7 @@ TEST(euler_to_quat, test_euler_to_quat_2) {
     }
 }
 
+// Test that non-zero pitch constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_3) {
     double roll {};
     double pitch { 1.0 };
@@ -134,6 +140,7 @@ TEST(euler_to_quat, test_euler_to_quat_3) {
     }
 }
 
+// Test that non-zero yaw constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_4) {
     double roll {};
     double pitch {};
@@ -146,6 +153,7 @@ TEST(euler_to_quat, test_euler_to_quat_4) {
     }
 }
 
+// Test that non-zero euler angles constructs the correct quaternion
 TEST(euler_to_quat, test_euler_to_quat_5) {
     double roll { 1.0 };
     double pitch { 1.0 };
