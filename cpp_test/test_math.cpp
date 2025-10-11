@@ -110,4 +110,52 @@ TEST(euler_to_quat, test_euler_to_quat_1) {
     }
 }
 
+TEST(euler_to_quat, test_euler_to_quat_2) {
+    double roll { 1.0 };
+    double pitch {};
+    double yaw {};
+    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
+    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
+    Eigen::Vector4d expected { 0.479, 0.0, 0.0, 0.877 };
+    for (int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+TEST(euler_to_quat, test_euler_to_quat_3) {
+    double roll {};
+    double pitch { 1.0 };
+    double yaw {};
+    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
+    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
+    Eigen::Vector4d expected { 0.0, 0.479, 0.0, 0.877 };
+    for (int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+TEST(euler_to_quat, test_euler_to_quat_4) {
+    double roll {};
+    double pitch {};
+    double yaw { 1.0 };
+    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
+    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
+    Eigen::Vector4d expected { 0.0, 0.0, 0.479, 0.877 };
+    for (int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+TEST(euler_to_quat, test_euler_to_quat_5) {
+    double roll { 1.0 };
+    double pitch { 1.0 };
+    double yaw { 1.0 };
+    Eigen::Quaterniond q { euler_to_quat(roll, pitch, yaw) };
+    Eigen::Vector4d result { q.x(), q.y(), q.z(), q.w() };
+    Eigen::Vector4d expected { 0.1675, 0.5709, 0.1675, 0.786 };
+    for (int i = 0; i < 3; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
 }  // namespace vortex::utils::math
