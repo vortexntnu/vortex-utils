@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Geometry>
 
 namespace Eigen {
     typedef Eigen::Matrix<double, 6, 6> Matrix6d;
@@ -17,10 +18,15 @@ namespace vortex::utils::math {
 double ssa(const double angle);
 
 // @brief Calculates the skew-symmetric matrix from a 3D vector.
-Eigen::Matrix3d skew_symmetric(const Eigen::Vector3d& vector);
+Eigen::Matrix3d get_skew_symmetric_matrix(const Eigen::Vector3d& vector);
+
+Eigen::Matrix3d get_rotation_matrix(const double roll, const double pitch, const double yaw);
 
 // @brief Converts a quaternion to Euler angles.
 Eigen::Vector3d quat_to_euler(const Eigen::Quaterniond& q);
+
+// @brief Converts Euler angles to quaternion
+Eigen::Quaterniond euler_to_quat(const double roll, const double pitch, const double yaw);
 
 }  // namespace vortex::utils::math
 
