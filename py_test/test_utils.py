@@ -231,7 +231,7 @@ def test_h264_decoder_initialization(decoder):
 
 def test_h264_decoder_decodes_frames(decoder):
     """Test if the decoder correctly processes an H.264 stream."""
-    test_file = "tests/resources/test_video.h264"
+    test_file = "py_test/resources/test_video.h264"
 
     # Read and push H.264 data
     with open(test_file, "rb") as f:
@@ -254,7 +254,7 @@ def test_h264_decoder_decodes_frames(decoder):
 
 def test_h264_decoder_frame_properties(decoder):
     """Test if decoded frames have correct properties."""
-    test_file = "tests/resources/test_video.h264"
+    test_file = "py_test/resources/test_video.h264"
 
     # Read and push H.264 data
     with open(test_file, "rb") as f:
