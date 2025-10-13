@@ -32,9 +32,7 @@ struct Eta {
     }
 
     Eigen::Vector6d to_vector() const {
-        Eigen::Vector6d eta;
-        eta << x, y, z, roll, pitch, yaw;
-        return eta;
+        return Eigen::Vector6d{x, y, z, roll, pitch, yaw};
     }
 
     // @brief Make the rotation matrix according to eq. 2.31 in Fossen, 2021
@@ -111,9 +109,7 @@ struct Nu {
     }
 
     Eigen::Vector6d to_vector() const {
-        Eigen::Vector6d nu;
-        nu << u, v, w, p, q, r;
-        return nu;
+        return Eigen::Vector6d{u, v, w, p, q, r};
     }
 };
 
