@@ -92,7 +92,7 @@ TEST(quat_to_euler, test_quat_to_euler_4) {
     }
 }
 
-// Test that a quaternion with flipped signs is correctly convverted to euler
+// Test that a quaternion with flipped signs is correctly converted to euler
 // angles
 TEST(quat_to_euler, test_quat_to_euler_5) {
     Eigen::Quaterniond q5(0.770, 0.4207, 0.4207, 0.229);
@@ -111,7 +111,7 @@ TEST(euler_to_quat, test_euler_to_quat_1) {
     Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
     Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
     Eigen::Vector4d expected{0.0, 0.0, 0.0, 1.0};
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
 }
@@ -124,7 +124,7 @@ TEST(euler_to_quat, test_euler_to_quat_2) {
     Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
     Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
     Eigen::Vector4d expected{0.479, 0.0, 0.0, 0.877};
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
 }
@@ -137,7 +137,7 @@ TEST(euler_to_quat, test_euler_to_quat_3) {
     Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
     Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
     Eigen::Vector4d expected{0.0, 0.479, 0.0, 0.877};
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
 }
@@ -150,7 +150,7 @@ TEST(euler_to_quat, test_euler_to_quat_4) {
     Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
     Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
     Eigen::Vector4d expected{0.0, 0.0, 0.479, 0.877};
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
 }
@@ -163,7 +163,7 @@ TEST(euler_to_quat, test_euler_to_quat_5) {
     Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
     Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
     Eigen::Vector4d expected{0.1675, 0.5709, 0.1675, 0.786};
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }
 }
