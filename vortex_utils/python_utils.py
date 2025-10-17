@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -112,8 +112,8 @@ class TwistData:
 
 @dataclass(slots=True)
 class State:
-    pose: PoseData = PoseData()
-    twist: TwistData = TwistData()
+    pose: PoseData = field(default_factory=lambda: PoseData())
+    twist: TwistData = field(default_factory=lambda: TwistData())
 
     def __add__(self, other: "State") -> "State":
         return State(pose=self.pose + other.pose, twist=self.twist + other.twist)
