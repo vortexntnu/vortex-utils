@@ -52,6 +52,48 @@ TEST(get_transformation_matrix_attitude, test_transformation_matrix_zeros) {
     EXPECT_NEAR(0.0, matrix_norm_diff(expected, transformation_matrix), 0.01);
 }
 
+TEST(get_transformation_matrix_attitude_quat,
+     test_transformation_matrix_unit_quat) {
+    Eigen::Quaterniond quat = Eigen::Quaterniond::Identity();
+    Eigen::Matrix<double, 4, 3> transformation_matrix{
+        get_transformation_matrix_attitude_quat(quat)};
+    Eigen::Matrix<double, 4, 3> expected = Eigen::Matrix<double, 4, 3>::Zero();
+    expected.bottomRightCorner<3, 3>() = 0.5 * Eigen::Matrix3d::Identity();
+    EXPECT_NEAR(0.0, matrix_norm_diff(expected, transformation_matrix), 0.01);
+}
+
+TEST(eigen_vector3d_to_quaternion, zero_vector_returns_identity) {
+    const Eigen::Vector3d v = Eigen::Vector3d::Zero();
+
+    const Eigen::Quaterniond q = eigen_vector3d_to_quaternion(v);
+
+    EXPECT_NEAR(q.w(), 1.0, 1e-15);
+    EXPECT_NEAR(q.x(), 0.0, 1e-15);
+    EXPECT_NEAR(q.y(), 0.0, 1e-15);
+    EXPECT_NEAR(q.z(), 0.0, 1e-15);
+    EXPECT_NEAR(q.norm(), 1.0, 1e-15);
+}
+
+TEST(eigen_vector3d_to_quaternion, general_vector_matches_axis_angle_formula) {
+    const Eigen::Vector3d v(0.3, -0.4, 0.5);
+    const double angle = v.norm();
+    const Eigen::Vector3d axis = v / angle;
+
+    const double half = 0.5 * angle;
+    const double c = cos(half);
+    const double s = sin(half);
+    const Eigen::Quaterniond expected(c, axis.x() * s, axis.y() * s,
+                                      axis.z() * s);
+
+    const Eigen::Quaterniond q = eigen_vector3d_to_quaternion(v);
+
+    EXPECT_NEAR(q.w(), expected.w(), 1e-12);
+    EXPECT_NEAR(q.x(), expected.x(), 1e-12);
+    EXPECT_NEAR(q.y(), expected.y(), 1e-12);
+    EXPECT_NEAR(q.z(), expected.z(), 1e-12);
+    EXPECT_NEAR(q.norm(), 1.0, 1e-12);
+}
+
 // Test that the identity quaternion correctly maps to 0, 0, 0
 TEST(quat_to_euler, test_quat_to_euler_1) {
     Eigen::Quaterniond q(1.0, 0.0, 0.0, 0.0);
@@ -163,6 +205,71 @@ TEST(euler_to_quat, test_euler_to_quat_5) {
     Eigen::Quaterniond q{euler_to_quat(roll, pitch, yaw)};
     Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
     Eigen::Vector4d expected{0.1675, 0.5709, 0.1675, 0.786};
+    for (int i = 0; i < 4; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+// Test that zero euler angles construct the correct quaternion
+TEST(euler_to_quat_vec3, zero_angles_identity_quaternion) {
+    const Eigen::Vector3d euler(0.0, 0.0, 0.0);  // roll, pitch, yaw
+    const Eigen::Quaterniond q = euler_to_quat(euler);
+
+    const Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    const Eigen::Vector4d expected(0.0, 0.0, 0.0, 1.0);
+
+    for (int i = 0; i < 4; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+// Test that non-zero roll constructs the correct quaternion
+TEST(euler_to_quat_vec3, roll_only) {
+    const Eigen::Vector3d euler(1.0, 0.0, 0.0);  // roll, pitch, yaw
+    const Eigen::Quaterniond q = euler_to_quat(euler);
+
+    const Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    const Eigen::Vector4d expected(0.479, 0.0, 0.0, 0.877);
+
+    for (int i = 0; i < 4; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+// Test that non-zero pitch constructs the correct quaternion
+TEST(euler_to_quat_vec3, pitch_only) {
+    const Eigen::Vector3d euler(0.0, 1.0, 0.0);
+    const Eigen::Quaterniond q = euler_to_quat(euler);
+
+    const Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    const Eigen::Vector4d expected(0.0, 0.479, 0.0, 0.877);
+
+    for (int i = 0; i < 4; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+// Test that non-zero yaw constructs the correct quaternion
+TEST(euler_to_quat_vec3, yaw_only) {
+    const Eigen::Vector3d euler(0.0, 0.0, 1.0);
+    const Eigen::Quaterniond q = euler_to_quat(euler);
+
+    const Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    const Eigen::Vector4d expected(0.0, 0.0, 0.479, 0.877);
+
+    for (int i = 0; i < 4; ++i) {
+        EXPECT_NEAR(expected[i], result[i], 0.01);
+    }
+}
+
+// Test that non-zero euler angles construct the correct quaternion
+TEST(euler_to_quat_vec3, roll_pitch_yaw_all_nonzero) {
+    const Eigen::Vector3d euler(1.0, 1.0, 1.0);
+    const Eigen::Quaterniond q = euler_to_quat(euler);
+
+    const Eigen::Vector4d result{q.x(), q.y(), q.z(), q.w()};
+    const Eigen::Vector4d expected(0.1675, 0.5709, 0.1675, 0.786);
+
     for (int i = 0; i < 4; ++i) {
         EXPECT_NEAR(expected[i], result[i], 0.01);
     }

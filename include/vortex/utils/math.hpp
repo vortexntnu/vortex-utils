@@ -28,6 +28,13 @@ Eigen::Matrix3d get_rotation_matrix(const double roll,
 Eigen::Matrix3d get_transformation_matrix_attitude(const double roll,
                                                    const double pitch);
 
+// @brief Fossen, 2021 eq. 2.78
+Eigen::Matrix<double, 4, 3> get_transformation_matrix_attitude_quat(
+    const Eigen::Quaterniond& quat);
+
+// @brief Converts an Eigen::Vector3d with euler angles to Eigen::Quaterniond
+Eigen::Quaterniond eigen_vector3d_to_quaternion(const Eigen::Vector3d& vector);
+
 // @brief Converts a quaternion to Euler angles.
 Eigen::Vector3d quat_to_euler(const Eigen::Quaterniond& q);
 
@@ -35,6 +42,9 @@ Eigen::Vector3d quat_to_euler(const Eigen::Quaterniond& q);
 Eigen::Quaterniond euler_to_quat(const double roll,
                                  const double pitch,
                                  const double yaw);
+
+// @brief Converts Eigen::Vector3d with euler angles to quaternion
+Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler);
 
 }  // namespace vortex::utils::math
 
