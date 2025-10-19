@@ -25,6 +25,32 @@ Eigen::Matrix3d get_rotation_matrix(const double roll,
     return rotation_matrix;
 }
 
+Eigen::Matrix<double, 4, 3> get_transformation_matrix_attitude_quat(
+    const Eigen::Quaterniond& quat) {
+    Eigen::Matrix<double, 4, 3> T_q = Eigen::Matrix<double, 4, 3>::Zero();
+    double qw{quat.w()};
+    double qx{quat.x()};
+    double qy{quat.y()};
+    double qz{quat.z()};
+
+    T_q << -qx, -qy, -qz, qw, -qz, qy, qz, qw, -qx, -qy, qx, qw;
+
+    T_q *= 0.5;
+    return T_q;
+}
+
+Eigen::Quaterniond eigen_vector3d_to_quaternion(const Eigen::Vector3d& vector) {
+    double angle{vector.norm()};
+    if (angle < 1e-8) {
+        return Eigen::Quaterniond(1.0, 0.0, 0.0, 0.0);
+    } else {
+        Eigen::Vector3d axis = vector / angle;
+        Eigen::Quaterniond quat =
+            Eigen::Quaterniond(Eigen::AngleAxisd(angle, axis));
+        return quat.normalized();
+    }
+}
+
 Eigen::Matrix3d get_transformation_matrix_attitude(const double roll,
                                                    const double pitch) {
     double sin_r = sin(roll);
@@ -66,6 +92,14 @@ Eigen::Quaterniond euler_to_quat(const double roll,
     const Eigen::AngleAxisd r_y(pitch, Eigen::Vector3d::UnitY());
     const Eigen::AngleAxisd r_x(roll, Eigen::Vector3d::UnitX());
     Eigen::Quaterniond q = r_z * r_y * r_x;
+    return q.normalized();
+}
+
+Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler) {
+    Eigen::Quaterniond q;
+    q = Eigen::AngleAxisd(euler.z(), Eigen::Vector3d::UnitZ()) *
+        Eigen::AngleAxisd(euler.y(), Eigen::Vector3d::UnitY()) *
+        Eigen::AngleAxisd(euler.x(), Eigen::Vector3d::UnitX());
     return q.normalized();
 }
 
