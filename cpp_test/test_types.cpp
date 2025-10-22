@@ -91,3 +91,50 @@ TEST_F(TypesTests, test_nu) {
     EXPECT_NEAR(diff.q, 0.3, 1e-12);
     EXPECT_NEAR(diff.r, 1.4, 1e-12);
 }
+
+TEST_F(TypesTests, test_pose) {
+    using vortex::utils::types::Pose;
+    using vortex::utils::math::euler_to_quat;
+
+    // --- 1. Default initialization ---
+    Pose pose_default;
+    EXPECT_DOUBLE_EQ(pose_default.position.x(), 0.0);
+    EXPECT_DOUBLE_EQ(pose_default.position.y(), 0.0);
+    EXPECT_DOUBLE_EQ(pose_default.position.z(), 0.0);
+    EXPECT_DOUBLE_EQ(pose_default.orientation.w(), 1.0);
+    EXPECT_DOUBLE_EQ(pose_default.orientation.x(), 0.0);
+    EXPECT_DOUBLE_EQ(pose_default.orientation.y(), 0.0);
+    EXPECT_DOUBLE_EQ(pose_default.orientation.z(), 0.0);
+
+    // --- 2. Construction from position vector and quaternion ---
+    Eigen::Vector3d pos(1.0, 2.0, 3.0);
+    Eigen::Quaterniond q_unormalized(2.0, 1.0, 1.0, 1.0);
+    Pose pose_vec_quat(pos, q_unormalized);
+    EXPECT_NEAR(pose_vec_quat.orientation.norm(), 1.0, 1e-12);
+    EXPECT_DOUBLE_EQ(pose_vec_quat.position.x(), 1.0);
+    EXPECT_DOUBLE_EQ(pose_vec_quat.position.y(), 2.0);
+    EXPECT_DOUBLE_EQ(pose_vec_quat.position.z(), 3.0);
+
+    // --- 3. Construction from Euler angles ---
+    double x = 1.0, y = -2.0, z = 3.0;
+    double roll = 0.3, pitch = -0.5, yaw = 1.2;
+    Pose pose_euler(x, y, z, roll, pitch, yaw);
+    Eigen::Quaterniond expected_q = euler_to_quat(roll, pitch, yaw);
+    EXPECT_NEAR(pose_euler.orientation.w(), expected_q.w(), 1e-12);
+    EXPECT_NEAR(pose_euler.orientation.x(), expected_q.x(), 1e-12);
+    EXPECT_NEAR(pose_euler.orientation.y(), expected_q.y(), 1e-12);
+    EXPECT_NEAR(pose_euler.orientation.z(), expected_q.z(), 1e-12);
+
+    // --- 4. Copy construction and assignment ---
+    Pose pose_copy(Eigen::Vector3d(1.0, 2.0, 3.0), euler_to_quat(0.1, 0.2, 0.3));
+    Pose pose_assigned = pose_copy;
+    EXPECT_DOUBLE_EQ(pose_copy.position.x(), pose_assigned.position.x());
+    EXPECT_DOUBLE_EQ(pose_copy.position.y(), pose_assigned.position.y());
+    EXPECT_DOUBLE_EQ(pose_copy.position.z(), pose_assigned.position.z());
+    EXPECT_NEAR(pose_copy.orientation.w(), pose_assigned.orientation.w(), 1e-12);
+    EXPECT_NEAR(pose_copy.orientation.x(), pose_assigned.orientation.x(), 1e-12);
+    EXPECT_NEAR(pose_copy.orientation.y(), pose_assigned.orientation.y(), 1e-12);
+    EXPECT_NEAR(pose_copy.orientation.z(), pose_assigned.orientation.z(), 1e-12);
+
+}
+
