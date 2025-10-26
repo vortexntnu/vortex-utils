@@ -2,7 +2,6 @@
 #define VORTEX_UTILS_TYPES_HPP
 
 #include <eigen3/Eigen/Dense>
-#include "math.hpp"
 
 namespace Eigen {
 typedef Eigen::Matrix<double, 6, 6> Matrix6d;
@@ -113,23 +112,6 @@ struct Nu {
         return Eigen::Vector6d{u, v, w, p, q, r};
     }
 };
-
-// @brief Struct to represent a 3D pose with position and orientation (quaternion).
-struct Pose {
-    Eigen::Vector3d position{Eigen::Vector3d::Zero()};
-    Eigen::Quaterniond orientation{Eigen::Quaterniond::Identity()};
-
-    Pose() = default;
-
-    Pose(const Eigen::Vector3d& pos, const Eigen::Quaterniond& quat)
-        : position(pos), orientation(quat.normalized()) {}
-
-    Pose(double x, double y, double z, double roll, double pitch, double yaw)
-        : position(x, y, z) {
-        orientation = vortex::utils::math::euler_to_quat(roll, pitch, yaw);
-    }
-};
-
 
 }  // namespace vortex::utils::types
 
