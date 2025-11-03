@@ -15,4 +15,4 @@ comment:
   behavior: default
 
 ignore:
-  - "*/*test/*"
+  - "**/*test/**"
