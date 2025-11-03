@@ -15,4 +15,5 @@ comment:
   behavior: default
 
 ignore:
-  - "**/*test/**"
+  - "cpp_test/**"
+  - "py_test/**"
