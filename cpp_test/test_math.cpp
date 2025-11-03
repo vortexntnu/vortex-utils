@@ -25,6 +25,43 @@ TEST(ssa, test_ssa_minus_3_5) {
     EXPECT_NEAR(2.78, ssa(-3.5), 0.01);
 }
 
+TEST(ssa, test_ssa_minus_pi) {
+    EXPECT_EQ(M_PI, ssa(-M_PI));
+}
+
+TEST(ssa, test_ssa_pi) {
+    EXPECT_EQ(M_PI, ssa(M_PI));
+}
+
+TEST(ssa, test_ssa_vector) {
+    Eigen::VectorXd angles(6);
+    angles << 0.0, M_PI / 2, M_PI, 3 * M_PI, -4 * M_PI, -3 * M_PI / 2.0;
+
+    Eigen::VectorXd expected(6);
+    expected << 0.0, M_PI / 2, M_PI, M_PI, 0.0, M_PI / 2.0;
+
+    Eigen::VectorXd result = ssa(angles);
+    EXPECT_TRUE(result.isApprox(expected, 1e-12));
+
+    std::vector<double> angle_vec{0.0,      M_PI / 2,  M_PI,
+                                  3 * M_PI, -4 * M_PI, -3 * M_PI / 2.0};
+    std::vector<double> expected_vec{0.0,  M_PI / 2, M_PI,
+                                     M_PI, 0.0,      M_PI / 2.0};
+    std::vector<double> result_vec = ssa(angle_vec);
+    for (size_t i = 0; i < angle_vec.size(); ++i) {
+        EXPECT_NEAR(expected_vec[i], result_vec[i], 1e-12);
+    }
+
+    std::array<double, 6> angle_array{0.0,      M_PI / 2,  M_PI,
+                                      3 * M_PI, -4 * M_PI, -3 * M_PI / 2.0};
+    std::array<double, 6> expected_array{0.0,  M_PI / 2, M_PI,
+                                         M_PI, 0.0,      M_PI / 2.0};
+    std::array<double, 6> result_array = ssa(angle_array);
+    for (size_t i = 0; i < angle_array.size(); ++i) {
+        EXPECT_NEAR(expected_array[i], result_array[i], 1e-12);
+    }
+}
+
 // Test that the skew-symmetric matrix is correctly calculated
 TEST(get_skew_symmetric_matrix, test_skew_symmetric) {
     Eigen::Vector3d vector(1, 2, 3);

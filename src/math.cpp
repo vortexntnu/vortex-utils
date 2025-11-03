@@ -4,7 +4,7 @@ namespace vortex::utils::math {
 
 double ssa(const double angle) {
     double angle_ssa{fmod(angle + M_PI, 2 * M_PI)};
-    return angle_ssa < 0 ? angle_ssa + M_PI : angle_ssa - M_PI;
+    return angle_ssa <= 0 ? angle_ssa + M_PI : angle_ssa - M_PI;
 }
 
 Eigen::Matrix3d get_skew_symmetric_matrix(const Eigen::Vector3d& vector) {

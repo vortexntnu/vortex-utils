@@ -61,6 +61,15 @@ struct Eta {
     }
 
     /**
+     * @brief Apply smallest signed angle to roll, pitch, and yaw.
+     */
+    void apply_ssa() {
+        roll = vortex::utils::math::ssa(roll);
+        pitch = vortex::utils::math::ssa(pitch);
+        yaw = vortex::utils::math::ssa(yaw);
+    }
+
+    /**
      * @brief Make the rotation matrix corresponding to eq. 2.31 in Fossen, 2021
      * @return Eigen::Matrix3d rotation matrix
      */

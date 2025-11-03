@@ -2,18 +2,47 @@
 #define VORTEX_UTILS_MATH_HPP
 
 #include <cmath>
+#include <concepts>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
 
 namespace vortex::utils::math {
 
 /**
- * @brief Function to calculate the smallest signed angle between two angles.
- * Maps the angle to the interval [-pi, pi].
+ * @brief Function to calculate the smallest signed angle.
+ * Maps the angle to the interval (-pi, pi].
  * @param angle The input angle in radians.
  * @return The smallest signed angle in radians.
  */
 double ssa(const double angle);
+
+/**
+ * @brief Function to calculate the smallest signed angles in a container.
+ * Maps the angles to the interval [-pi, pi]. Works with containers like
+ * std::vector, std::array, Eigen::VectorXd etc.
+ * @param angles The input angles in radians.
+ * @return The smallest signed angles in radians.
+ */
+template <typename T>
+concept VectorLike = !std::is_arithmetic_v<std::decay_t<T>> && requires(T t) {
+    { *std::begin(t) } -> std::convertible_to<double>;
+};
+template <VectorLike Container>
+auto ssa(Container&& angles_in) {
+    using ContainerT = std::decay_t<Container>;
+    using std::begin;
+
+    ContainerT angles = std::forward<Container>(angles_in);
+
+    using value_type = std::decay_t<decltype(*begin(angles))>;
+    static_assert(std::is_floating_point_v<value_type>);
+
+    for (auto& a : angles) {
+        a = static_cast<value_type>(ssa(static_cast<double>(a)));
+    }
+
+    return angles;
+}
 
 /**
  * @brief Calculates the skew-symmetric matrix from a 3D vector.
