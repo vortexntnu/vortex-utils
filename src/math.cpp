@@ -103,4 +103,32 @@ Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler) {
     return q.normalized();
 }
 
+Eigen::MatrixXd pseudo_inverse(const Eigen::MatrixXd& matrix) {
+    if (matrix.rows() >= matrix.cols()) {
+        return (matrix.transpose() * matrix).ldlt().solve(matrix.transpose());
+    } else {
+        return matrix.transpose() * (matrix * matrix.transpose())
+                                        .ldlt()
+                                        .solve(Eigen::MatrixXd::Identity(
+                                            matrix.rows(), matrix.rows()));
+    }
+}
+
+Eigen::VectorXd clamp_values(const Eigen::VectorXd& values,
+                             const double min_val,
+                             const double max_val) {
+    return values.cwiseMax(min_val).cwiseMin(max_val);
+}
+
+Eigen::VectorXd anti_windup(const double dt,
+                            const Eigen::VectorXd& error,
+                            const Eigen::VectorXd& integral,
+                            const double min_val,
+                            const double max_val) {
+    Eigen::VectorXd integral_anti_windup = integral + (error * dt);
+
+    integral_anti_windup = clamp_values(integral_anti_windup, min_val, max_val);
+    return integral_anti_windup;
+}
+
 }  // namespace vortex::utils::math

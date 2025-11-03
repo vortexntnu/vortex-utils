@@ -11,15 +11,10 @@ namespace vortex::utils::math {
 // Maps the angle to the interval [-pi, pi].
 double ssa(const double angle);
 
-// @brief Helper to calculate error between two matrices
-inline double matrix_norm_diff(Eigen::MatrixXd m1, Eigen::MatrixXd m2) {
-    return (m1 - m2).norm();
-}
-
 // @brief Calculates the skew-symmetric matrix from a 3D vector.
 Eigen::Matrix3d get_skew_symmetric_matrix(const Eigen::Vector3d& vector);
 
-// @brief Rotation matrix from Eigen quat
+// @brief Rotation matrix from euler angles
 Eigen::Matrix3d get_rotation_matrix(const double roll,
                                     const double pitch,
                                     const double yaw);
@@ -46,6 +41,17 @@ Eigen::Quaterniond euler_to_quat(const double roll,
 // @brief Converts Eigen::Vector3d with euler angles to quaternion
 Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler);
 
+Eigen::MatrixXd pseudo_inverse(const Eigen::MatrixXd& matrix);
+
+Eigen::VectorXd clamp_values(const Eigen::VectorXd& values,
+                             const double min_val,
+                             const double max_val);
+
+Eigen::VectorXd anti_windup(const double dt,
+                            const Eigen::VectorXd& error,
+                            const Eigen::VectorXd& integral,
+                            const double min_val,
+                            const double max_val);
 }  // namespace vortex::utils::math
 
 #endif  // VORTEX_UTILS_MATH_HPP
