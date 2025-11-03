@@ -16,4 +16,3 @@ comment:
 
 ignore:
   - "cpp_test/**"
-  - "py_test/**"
