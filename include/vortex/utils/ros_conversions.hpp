@@ -1,26 +1,39 @@
-#ifndef ROS_CONVERSIONS_HPP
-#define ROS_CONVERSIONS_HPP
+#ifndef VORTEX_UTILS__ROS_CONVERSIONS_HPP_
+#define VORTEX_UTILS__ROS_CONVERSIONS_HPP_
 
-#include <tf2/LinearMath/Quaternion.h>
+#include "math.hpp"
 #include <geometry_msgs/msg/pose.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace vortex::utils::ros_conversions {
 
-template <typename T>
+template <typename T>  
+concept PoseLike = requires(const T& t) {  
+    { t.x }     -> std::convertible_to<double>;  
+    { t.y }     -> std::convertible_to<double>;  
+    { t.z }     -> std::convertible_to<double>;  
+    { t.roll }  -> std::convertible_to<double>;  
+    { t.pitch } -> std::convertible_to<double>;  
+    { t.yaw }   -> std::convertible_to<double>;  
+};  
+
+template <PoseLike T>
 geometry_msgs::msg::Pose reference_to_pose(const T& ref) {
     geometry_msgs::msg::Pose pose;
     pose.position.x = ref.x;
     pose.position.y = ref.y;
     pose.position.z = ref.z;
 
-    tf2::Quaternion q;
-    q.setRPY(ref.roll, ref.pitch, ref.yaw);
-    pose.orientation = tf2::toMsg(q);
+    Eigen::Quaterniond quat =
+        vortex::utils::math::euler_to_quat(ref.roll, ref.pitch, ref.yaw);
+
+    pose.orientation.x = quat.x();
+    pose.orientation.y = quat.y();
+    pose.orientation.z = quat.z();
+    pose.orientation.w = quat.w();
 
     return pose;
 }
 
 }  // namespace vortex::utils::ros_conversions
 
-#endif  // ROS_CONVERSIONS_HPP
+#endif  // VORTEX_UTILS__ROS_CONVERSIONS_HPP_
