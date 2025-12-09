@@ -1,20 +1,20 @@
 #ifndef VORTEX_UTILS__ROS_CONVERSIONS_HPP_
 #define VORTEX_UTILS__ROS_CONVERSIONS_HPP_
 
-#include "math.hpp"
 #include <geometry_msgs/msg/pose.hpp>
+#include "math.hpp"
 
 namespace vortex::utils::ros_conversions {
 
-template <typename T>  
-concept PoseLike = requires(const T& t) {  
-    { t.x }     -> std::convertible_to<double>;  
-    { t.y }     -> std::convertible_to<double>;  
-    { t.z }     -> std::convertible_to<double>;  
-    { t.roll }  -> std::convertible_to<double>;  
-    { t.pitch } -> std::convertible_to<double>;  
-    { t.yaw }   -> std::convertible_to<double>;  
-};  
+template <typename T>
+concept PoseLike = requires(const T& t) {
+    { t.x } -> std::convertible_to<double>;
+    { t.y } -> std::convertible_to<double>;
+    { t.z } -> std::convertible_to<double>;
+    { t.roll } -> std::convertible_to<double>;
+    { t.pitch } -> std::convertible_to<double>;
+    { t.yaw } -> std::convertible_to<double>;
+};
 
 template <PoseLike T>
 geometry_msgs::msg::Pose reference_to_pose(const T& ref) {
