@@ -42,7 +42,7 @@ concept EulerPoseLike = requires(const T& t) {
  * @return A `geometry_msgs::msg::Pose` containing the converted pose.
  */
 template <EulerPoseLike T>
-geometry_msgs::msg::Pose euler_to_pose_msg(const T& ref) {
+geometry_msgs::msg::Pose euler_pose_to_pose_msg(const T& ref) {
     geometry_msgs::msg::Pose pose;
     pose.position.x = ref.x;
     pose.position.y = ref.y;
