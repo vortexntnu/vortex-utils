@@ -1,43 +1,49 @@
 #include <gtest/gtest.h>
+#include <eigen3/Eigen/Dense>
 #include <string>
+
 #include "vortex/utils/ros_conversions.hpp"
 #include "vortex/utils/types.hpp"
 
-// ---------- Compile-time concept tests ----------
+// ================================================================
+//                  Compile-Time Concept Tests
+// ================================================================
 
-// Valid type for EulerPoseLike
 struct ValidEulerPose {
-    double x, y, z;
-    double roll, pitch, yaw;
+    double x = 0, y = 0, z = 0;
+    double roll = 0, pitch = 0, yaw = 0;
 };
 
-// Valid type for EulerPoseLike with additional fields
 struct ValidEulerPoseExtra {
-    double x, y, z;
-    double roll, pitch, yaw;
-    double extra_field;  // additional field
+    double x = 0, y = 0, z = 0;
+    double roll = 0, pitch = 0, yaw = 0;
+    double something_extra = 42.0;
 };
 
-// Invalid type for EulerPoseLike with quaternion fields
-struct QuatPose {
-    double x, y, z;
-    double qx, qy, qz, qw;
+struct ValidQuatPose {
+    double x = 1, y = 2, z = 3;
+    double qw = 1, qx = 0, qy = 0, qz = 0;
 };
 
-// Invalid: missing yaw
 struct MissingYaw {
-    double x, y, z;
-    double roll, pitch;
+    double x = 0, y = 0, z = 0;
+    double roll = 0, pitch = 0;
 };
 
-// Invalid: wrong type for roll
 struct WrongType {
-    double x, y, z;
+    double x = 0, y = 0, z = 0;
     std::string roll;  // not convertible to double
-    double pitch;
-    double yaw;
+    double pitch = 0, yaw = 0;
 };
 
+struct MissingQuaternionField {
+    double x = 0, y = 0, z = 0;
+    double qx = 0, qy = 0, qz = 0;  // missing qw
+};
+
+// ================================================================
+//                Concept: EulerPoseLike
+// ================================================================
 static_assert(vortex::utils::ros_conversions::EulerPoseLike<ValidEulerPose>,
               "ValidEulerPose should satisfy EulerPoseLike");
 
@@ -45,80 +51,149 @@ static_assert(
     vortex::utils::ros_conversions::EulerPoseLike<ValidEulerPoseExtra>,
     "ValidEulerPoseExtra should satisfy EulerPoseLike");
 
-static_assert(!vortex::utils::ros_conversions::EulerPoseLike<QuatPose>,
-              "QuatPose should NOT satisfy EulerPoseLike");
-
 static_assert(!vortex::utils::ros_conversions::EulerPoseLike<MissingYaw>,
               "MissingYaw should NOT satisfy EulerPoseLike");
 
 static_assert(!vortex::utils::ros_conversions::EulerPoseLike<WrongType>,
               "WrongType should NOT satisfy EulerPoseLike");
 
-// Ensure the function template accepts valid types
 static_assert(
-    std::is_same_v<
-        decltype(vortex::utils::ros_conversions::euler_pose_to_pose_msg(
-            std::declval<ValidEulerPose>())),
-        geometry_msgs::msg::Pose>,
-    "euler_pose_to_pose_msg should accept ValidEulerPose");
+    !vortex::utils::ros_conversions::EulerPoseLike<ValidQuatPose>,
+    "ValidQuatPose uses quaternion fields and must NOT satisfy EulerPoseLike");
 
-// Ensure the function template rejects invalid types
+// ================================================================
+//                Concept: QuatPoseLike
+// ================================================================
+static_assert(vortex::utils::ros_conversions::QuatPoseLike<ValidQuatPose>,
+              "ValidQuatPose should satisfy QuatPoseLike");
+
+static_assert(
+    !vortex::utils::ros_conversions::QuatPoseLike<MissingQuaternionField>,
+    "MissingQuaternionField should NOT satisfy QuatPoseLike");
+
+static_assert(!vortex::utils::ros_conversions::QuatPoseLike<ValidEulerPose>,
+              "Euler pose must NOT satisfy QuatPoseLike");
+
+// ================================================================
+//                Concept: Eigen6dEuler
+// ================================================================
+static_assert(
+    vortex::utils::ros_conversions::Eigen6dEuler<Eigen::Matrix<double, 6, 1>>,
+    "Eigen::Vector6d should satisfy Eigen6dEuler");
+
+static_assert(!vortex::utils::ros_conversions::Eigen6dEuler<Eigen::Vector3d>,
+              "Eigen::Vector3d must NOT satisfy Eigen6dEuler");
+
+// ================================================================
+//                Concept: PoseLike (master)
+// ================================================================
+static_assert(vortex::utils::ros_conversions::PoseLike<ValidEulerPose>,
+              "Euler pose should satisfy PoseLike");
+
+static_assert(vortex::utils::ros_conversions::PoseLike<ValidQuatPose>,
+              "Quat pose should satisfy PoseLike");
+
+static_assert(
+    vortex::utils::ros_conversions::PoseLike<Eigen::Matrix<double, 6, 1>>,
+    "Eigen::Vector6d pose should satisfy PoseLike");
+
+static_assert(!vortex::utils::ros_conversions::PoseLike<WrongType>,
+              "WrongType must NOT satisfy PoseLike");
+
+// ================================================================
+//      Function Acceptance Using Concepts (Overload Resolution)
+// ================================================================
 template <typename T>
-concept FunctionAccepts = requires(T t) {
-    vortex::utils::ros_conversions::euler_pose_to_pose_msg(t);
-};
+concept AcceptsPose =
+    requires(T t) { vortex::utils::ros_conversions::pose_like_to_pose_msg(t); };
 
-static_assert(FunctionAccepts<ValidEulerPose>,
-              "Function should accept ValidEulerPose");
+static_assert(AcceptsPose<ValidEulerPose>, "Euler pose should be accepted");
 
-static_assert(FunctionAccepts<ValidEulerPoseExtra>,
-              "Function should accept ValidEulerPoseExtra");
+static_assert(AcceptsPose<ValidQuatPose>, "Quaternion pose should be accepted");
 
-static_assert(!FunctionAccepts<QuatPose>,
-              "Function should NOT accept QuatPose");
+static_assert(AcceptsPose<Eigen::Matrix<double, 6, 1>>,
+              "Eigen6d should be accepted");
 
-static_assert(!FunctionAccepts<MissingYaw>,
-              "Function should NOT accept MissingYaw");
+static_assert(!AcceptsPose<MissingYaw>, "MissingYaw should NOT be accepted");
 
-static_assert(!FunctionAccepts<WrongType>,
-              "Function should NOT accept WrongType");
+static_assert(!AcceptsPose<WrongType>, "WrongType should NOT be accepted");
 
-// ---------- Runtime tests ----------
-
-TEST(euler_pose_to_pose_msg, test_default_eta_conversion) {
+// ================================================================
+//                      Runtime Tests: Euler
+// ================================================================
+TEST(pose_like_to_pose_msg, euler_zero_eta) {
     vortex::utils::types::Eta eta;
 
-    auto pose = vortex::utils::ros_conversions::euler_pose_to_pose_msg(eta);
+    auto pose = vortex::utils::ros_conversions::pose_like_to_pose_msg(eta);
 
-    EXPECT_NEAR(pose.position.x, eta.x, 1e-3);
-    EXPECT_NEAR(pose.position.y, eta.y, 1e-3);
-    EXPECT_NEAR(pose.position.z, eta.z, 1e-3);
+    EXPECT_NEAR(pose.position.x, 0.0, 1e-6);
+    EXPECT_NEAR(pose.position.y, 0.0, 1e-6);
+    EXPECT_NEAR(pose.position.z, 0.0, 1e-6);
 
-    // Expect identity quaternion for zero roll, pitch, yaw
-    EXPECT_NEAR(pose.orientation.x, 0.0, 1e-3);
-    EXPECT_NEAR(pose.orientation.y, 0.0, 1e-3);
-    EXPECT_NEAR(pose.orientation.z, 0.0, 1e-3);
-    EXPECT_NEAR(pose.orientation.w, 1.0, 1e-3);
+    EXPECT_NEAR(pose.orientation.x, 0.0, 1e-6);
+    EXPECT_NEAR(pose.orientation.y, 0.0, 1e-6);
+    EXPECT_NEAR(pose.orientation.z, 0.0, 1e-6);
+    EXPECT_NEAR(pose.orientation.w, 1.0, 1e-6);
 }
 
-TEST(euler_pose_to_pose_msg, test_nonzero_rotation) {
-    struct Pose {
-        double x = 1.0, y = 2.0, z = 3.0;
-        double roll = 1.0;
-        double pitch = 1.0;
-        double yaw = 1.0;
+TEST(pose_like_to_pose_msg, euler_nonzero_angles) {
+    struct EP {
+        double x = 1, y = 2, z = 3;
+        double roll = 1, pitch = 1, yaw = 1;
     };
+    EP p;
 
-    Pose p;
+    auto pose = vortex::utils::ros_conversions::pose_like_to_pose_msg(p);
 
-    auto pose = vortex::utils::ros_conversions::euler_pose_to_pose_msg(p);
+    EXPECT_NEAR(pose.position.x, 1, 1e-6);
+    EXPECT_NEAR(pose.position.y, 2, 1e-6);
+    EXPECT_NEAR(pose.position.z, 3, 1e-6);
 
-    EXPECT_NEAR(pose.position.x, 1.0, 1e-3);
-    EXPECT_NEAR(pose.position.y, 2.0, 1e-3);
-    EXPECT_NEAR(pose.position.z, 3.0, 1e-3);
+    Eigen::Quaterniond expected = vortex::utils::math::euler_to_quat(1, 1, 1);
 
-    EXPECT_NEAR(pose.orientation.x, 0.1675, 1e-3);
-    EXPECT_NEAR(pose.orientation.y, 0.5463, 1e-3);
-    EXPECT_NEAR(pose.orientation.z, 0.1675, 1e-3);
-    EXPECT_NEAR(pose.orientation.w, 0.786, 1e-3);
+    EXPECT_NEAR(pose.orientation.x, expected.x(), 1e-6);
+    EXPECT_NEAR(pose.orientation.y, expected.y(), 1e-6);
+    EXPECT_NEAR(pose.orientation.z, expected.z(), 1e-6);
+    EXPECT_NEAR(pose.orientation.w, expected.w(), 1e-6);
+}
+
+// ================================================================
+//                Runtime Tests: Quaternion Pose
+// ================================================================
+TEST(pose_like_to_pose_msg, quat_pose_conversion) {
+    ValidQuatPose qp;
+
+    auto pose = vortex::utils::ros_conversions::pose_like_to_pose_msg(qp);
+
+    EXPECT_NEAR(pose.position.x, 1.0, 1e-6);
+    EXPECT_NEAR(pose.position.y, 2.0, 1e-6);
+    EXPECT_NEAR(pose.position.z, 3.0, 1e-6);
+
+    EXPECT_NEAR(pose.orientation.w, 1.0, 1e-6);
+    EXPECT_NEAR(pose.orientation.x, 0.0, 1e-6);
+    EXPECT_NEAR(pose.orientation.y, 0.0, 1e-6);
+    EXPECT_NEAR(pose.orientation.z, 0.0, 1e-6);
+}
+
+// ================================================================
+//                Runtime Tests: Eigen::Vector6d
+// ================================================================
+TEST(pose_like_to_pose_msg, eigen6d_conversion) {
+    Eigen::Matrix<double, 6, 1> v;
+    v << 1, 2, 3,       // xyz
+        0.1, 0.2, 0.3;  // roll pitch yaw
+
+    auto pose = vortex::utils::ros_conversions::pose_like_to_pose_msg(v);
+
+    EXPECT_NEAR(pose.position.x, 1.0, 1e-6);
+    EXPECT_NEAR(pose.position.y, 2.0, 1e-6);
+    EXPECT_NEAR(pose.position.z, 3.0, 1e-6);
+
+    Eigen::Quaterniond expected =
+        vortex::utils::math::euler_to_quat(0.1, 0.2, 0.3);
+
+    EXPECT_NEAR(pose.orientation.w, expected.w(), 1e-6);
+    EXPECT_NEAR(pose.orientation.x, expected.x(), 1e-6);
+    EXPECT_NEAR(pose.orientation.y, expected.y(), 1e-6);
+    EXPECT_NEAR(pose.orientation.z, expected.z(), 1e-6);
 }
