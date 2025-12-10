@@ -172,21 +172,60 @@ geometry_msgs::msg::Pose pose_like_to_pose_msg(const T& v) {
     return pose;
 }
 
+/**
+ * @brief Helper concept to check if two types are the same
+ *        after removing cv-ref qualifiers.
+ *
+ * @tparam T First type.
+ * @tparam U Second type.
+ */
+template <typename T, typename U>
+concept same_bare_as = std::same_as<std::remove_cvref_t<T>, U>;
+
+/**
+ * @brief Concept describing ROS pose message types supported by
+ * ros_to_eigen6d().
+ *
+ * Supported types are:
+ *
+ *  - `geometry_msgs::msg::Pose`
+ *
+ *  - `geometry_msgs::msg::PoseStamped`
+ *
+ *  - `geometry_msgs::msg::PoseWithCovarianceStamped`
+ *
+ *  - `geometry_msgs::msg::PoseArray`
+ *
+ * @tparam T  The candidate type to test.
+ */
 template <typename T>
 concept ROSPoseLike =
-    std::same_as<std::remove_cvref_t<T>, geometry_msgs::msg::Pose> ||
-    std::same_as<std::remove_cvref_t<T>, geometry_msgs::msg::PoseArray> ||
-    std::same_as<std::remove_cvref_t<T>, geometry_msgs::msg::PoseStamped> ||
-    std::same_as<std::remove_cvref_t<T>,
-                 geometry_msgs::msg::PoseWithCovarianceStamped>;
+    same_bare_as<T, geometry_msgs::msg::Pose> ||
+    same_bare_as<T, geometry_msgs::msg::PoseArray> ||
+    same_bare_as<T, geometry_msgs::msg::PoseStamped> ||
+    same_bare_as<T, geometry_msgs::msg::PoseWithCovarianceStamped>;
 
-// @brief Convert various ROS pose messages to Eigen 6D vectors/matrices
-//        Each column is [x, y, z, roll, pitch, yaw]^T
+/**
+ * @brief Convert various ROS pose messages to Eigen 6d types.
+ *
+ * The function supports the following input types:
+ *
+ * - `geometry_msgs::msg::Pose`
+ *
+ * - `geometry_msgs::msg::PoseStamped`
+ *
+ * - `geometry_msgs::msg::PoseWithCovarianceStamped`
+ *
+ * - `geometry_msgs::msg::PoseArray`
+ *
+ * @tparam T A type satisfying the `ROSPoseLike` concept.
+ * @param msg The input ROS message.
+ * @return An `Eigen::Matrix<double, 6, Dynamic>` containing the converted
+ * poses where each column is [x, y, z, roll, pitch, yaw]^T.
+ */
 template <ROSPoseLike T>
 inline Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const T& msg) {
-    using B = std::remove_cvref_t<T>;
-
-    if constexpr (std::same_as<B, geometry_msgs::msg::Pose>) {
+    if constexpr (same_bare_as<T, geometry_msgs::msg::Pose>) {
         Eigen::Matrix<double, 6, 1> v;
         v(0) = msg.position.x;
         v(1) = msg.position.y;
@@ -203,16 +242,16 @@ inline Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const T& msg) {
         return v;
     }
 
-    else if constexpr (std::same_as<B, geometry_msgs::msg::PoseStamped>) {
+    else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseStamped>) {
         return ros_to_eigen6d(msg.pose);
     }
 
-    else if constexpr (std::same_as<
-                           B, geometry_msgs::msg::PoseWithCovarianceStamped>) {
+    else if constexpr (same_bare_as<
+                           T, geometry_msgs::msg::PoseWithCovarianceStamped>) {
         return ros_to_eigen6d(msg.pose.pose);
     }
 
-    else if constexpr (std::same_as<B, geometry_msgs::msg::PoseArray>) {
+    else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseArray>) {
         const size_t n = msg.poses.size();
         Eigen::Matrix<double, 6, Eigen::Dynamic> X(6, n);
 
