@@ -26,26 +26,20 @@ TEST_F(TypesTests, test_eta) {
     Eigen::Matrix3d expected_rm{
         vortex::utils::math::get_rotation_matrix(1.0, 0.5, 1.7)};
     Eigen::Matrix3d result_rm{eta.as_rotation_matrix()};
-    double diff_rm{
-        vortex::utils::math::matrix_norm_diff(expected_rm, result_rm)};
-    EXPECT_NEAR(diff_rm, 0.0, 1e-12);
+    EXPECT_TRUE(result_rm.isApprox(expected_rm, 1e-12));
 
     Eigen::Matrix3d expected_tm{
         vortex::utils::math::get_transformation_matrix_attitude(1.0, 0.5)};
     Eigen::Matrix3d result_tm{eta.as_transformation_matrix()};
-    double diff_tm{
-        vortex::utils::math::matrix_norm_diff(expected_tm, result_tm)};
-    EXPECT_NEAR(diff_tm, 0.0, 1e-12);
+    EXPECT_TRUE(result_tm.isApprox(expected_tm, 1e-12));
 
     // Test to_vector
     eta.x = 5.0;
     eta.y = -4.0;
     eta.z = 2.1;
-    Eigen::Vector6d result_v{eta.to_vector()};
-    Eigen::Vector6d expected_v{5.0, -4.0, 2.1, 1.0, 0.5, 1.7};
-    for (int i = 0; i < 6; ++i) {
-        EXPECT_NEAR(expected_v[i], result_v[i], 1e-12);
-    }
+    Eigen::Vector<double, 6> result_v{eta.to_vector()};
+    Eigen::Vector<double, 6> expected_v{5.0, -4.0, 2.1, 1.0, 0.5, 1.7};
+    EXPECT_TRUE(result_v.isApprox(expected_v, 1e-12));
 
     // Test operator-
     vortex::utils::types::Eta other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3};
@@ -56,6 +50,41 @@ TEST_F(TypesTests, test_eta) {
     EXPECT_NEAR(diff.roll, 0.9, 1e-12);
     EXPECT_NEAR(diff.pitch, 0.3, 1e-12);
     EXPECT_NEAR(diff.yaw, 1.4, 1e-12);
+}
+
+TEST_F(TypesTests, test_eta_quat) {
+    vortex::utils::types::EtaQuat eta_quat;
+    // Test correct zero initialization
+    EXPECT_EQ(eta_quat.x, 0.0);
+    EXPECT_EQ(eta_quat.y, 0.0);
+    EXPECT_EQ(eta_quat.z, 0.0);
+    EXPECT_EQ(eta_quat.qw, 1.0);
+    EXPECT_EQ(eta_quat.qx, 0.0);
+    EXPECT_EQ(eta_quat.qy, 0.0);
+    EXPECT_EQ(eta_quat.qz, 0.0);
+
+    // Test to_vector
+    eta_quat.x = 5.0;
+    eta_quat.y = -4.0;
+    eta_quat.z = 2.1;
+    eta_quat.qw = 1.0;
+    eta_quat.qx = 0.5;
+    eta_quat.qy = -0.5;
+    eta_quat.qz = 0.25;
+    Eigen::Vector<double, 7> result_v{eta_quat.to_vector()};
+    Eigen::Vector<double, 7> expected_v{5.0, -4.0, 2.1, 1.0, 0.5, -0.5, 0.25};
+    EXPECT_TRUE(result_v.isApprox(expected_v, 1e-12));
+
+    // Test operator-
+    vortex::utils::types::EtaQuat other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3, 0.4};
+    vortex::utils::types::EtaQuat diff{eta_quat - other};
+    auto pos = diff.pos_vector();
+    EXPECT_TRUE(pos.isApprox(Eigen::Vector3d(4.0, -6.0, -0.9), 1e-12));
+    auto q = diff.ori_quaternion();
+    EXPECT_TRUE(q.isApprox(
+        Eigen::Quaterniond(0.21908902300206642, -0.6207522318391883,
+                           -0.7302967433402215, -0.18257418583505536),
+        1e-12));
 }
 
 TEST_F(TypesTests, test_nu) {
@@ -75,11 +104,9 @@ TEST_F(TypesTests, test_nu) {
     nu.p = 1.0;
     nu.q = 0.5;
     nu.r = 1.7;
-    Eigen::Vector6d result_v{nu.to_vector()};
-    Eigen::Vector6d expected_v{5.0, -4.0, 2.1, 1.0, 0.5, 1.7};
-    for (int i = 0; i < 6; ++i) {
-        EXPECT_NEAR(expected_v[i], result_v[i], 1e-12);
-    }
+    Eigen::Vector<double, 6> result_v{nu.to_vector()};
+    Eigen::Vector<double, 6> expected_v{5.0, -4.0, 2.1, 1.0, 0.5, 1.7};
+    EXPECT_TRUE(result_v.isApprox(expected_v, 1e-12));
 
     // Test operator-
     vortex::utils::types::Nu other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3};

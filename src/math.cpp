@@ -4,7 +4,7 @@ namespace vortex::utils::math {
 
 double ssa(const double angle) {
     double angle_ssa{fmod(angle + M_PI, 2 * M_PI)};
-    return angle_ssa < 0 ? angle_ssa + M_PI : angle_ssa - M_PI;
+    return angle_ssa <= 0 ? angle_ssa + M_PI : angle_ssa - M_PI;
 }
 
 Eigen::Matrix3d get_skew_symmetric_matrix(const Eigen::Vector3d& vector) {
@@ -101,6 +101,34 @@ Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler) {
         Eigen::AngleAxisd(euler.y(), Eigen::Vector3d::UnitY()) *
         Eigen::AngleAxisd(euler.x(), Eigen::Vector3d::UnitX());
     return q.normalized();
+}
+
+Eigen::MatrixXd pseudo_inverse(const Eigen::MatrixXd& matrix) {
+    if (matrix.rows() >= matrix.cols()) {
+        return (matrix.transpose() * matrix).ldlt().solve(matrix.transpose());
+    } else {
+        return matrix.transpose() * (matrix * matrix.transpose())
+                                        .ldlt()
+                                        .solve(Eigen::MatrixXd::Identity(
+                                            matrix.rows(), matrix.rows()));
+    }
+}
+
+Eigen::VectorXd clamp_values(const Eigen::VectorXd& values,
+                             const double min_val,
+                             const double max_val) {
+    return values.cwiseMax(min_val).cwiseMin(max_val);
+}
+
+Eigen::VectorXd anti_windup(const double dt,
+                            const Eigen::VectorXd& error,
+                            const Eigen::VectorXd& integral,
+                            const double min_val,
+                            const double max_val) {
+    Eigen::VectorXd integral_anti_windup = integral + (error * dt);
+
+    integral_anti_windup = clamp_values(integral_anti_windup, min_val, max_val);
+    return integral_anti_windup;
 }
 
 }  // namespace vortex::utils::math

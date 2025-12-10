@@ -8,6 +8,7 @@ add_executable(
     ${TEST_BINARY_NAME}
     test_math.cpp
     test_types.cpp
+    test_ros_conversions.cpp
 )
 
 target_link_libraries(
