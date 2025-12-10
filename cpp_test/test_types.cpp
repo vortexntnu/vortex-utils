@@ -118,4 +118,3 @@ TEST_F(TypesTests, test_nu) {
     EXPECT_NEAR(diff.q, 0.3, 1e-12);
     EXPECT_NEAR(diff.r, 1.4, 1e-12);
 }
-

@@ -174,18 +174,19 @@ geometry_msgs::msg::Pose pose_like_to_pose_msg(const T& v) {
 
 template <typename T>
 concept ROSPoseLike =
-    std::same_as<T, geometry_msgs::msg::Pose> ||
-    std::same_as<T, geometry_msgs::msg::PoseArray> ||
-    std::same_as<T, geometry_msgs::msg::PoseStamped> ||
-    std::same_as<T, geometry_msgs::msg::PoseWithCovarianceStamped>;
+    std::same_as<std::remove_cvref_t<T>, geometry_msgs::msg::Pose> ||
+    std::same_as<std::remove_cvref_t<T>, geometry_msgs::msg::PoseArray> ||
+    std::same_as<std::remove_cvref_t<T>, geometry_msgs::msg::PoseStamped> ||
+    std::same_as<std::remove_cvref_t<T>,
+                 geometry_msgs::msg::PoseWithCovarianceStamped>;
 
 // @brief Convert various ROS pose messages to Eigen 6D vectors/matrices
 //        Each column is [x, y, z, roll, pitch, yaw]^T
-inline Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const ROSPoseLike auto& msg)
-{
-    using T = std::decay_t<decltype(msg)>;
+template <ROSPoseLike T>
+inline Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const T& msg) {
+    using B = std::remove_cvref_t<T>;
 
-    if constexpr (std::same_as<T, geometry_msgs::msg::Pose>) {
+    if constexpr (std::same_as<B, geometry_msgs::msg::Pose>) {
         Eigen::Matrix<double, 6, 1> v;
         v(0) = msg.position.x;
         v(1) = msg.position.y;
@@ -193,11 +194,8 @@ inline Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const ROSPoseLike
 
         // ROS/tf2 uses (x, y, z, w)
         // while Eigen stores quaternions as (w, x, y, z)
-        Eigen::Quaterniond q(
-            msg.orientation.w,
-            msg.orientation.x,
-            msg.orientation.y,
-            msg.orientation.z);
+        Eigen::Quaterniond q(msg.orientation.w, msg.orientation.x,
+                             msg.orientation.y, msg.orientation.z);
 
         const Eigen::Vector3d euler = vortex::utils::math::quat_to_euler(q);
         v.tail<3>() = euler;
@@ -205,24 +203,23 @@ inline Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const ROSPoseLike
         return v;
     }
 
-    else if constexpr (std::same_as<T, geometry_msgs::msg::PoseStamped>) {
+    else if constexpr (std::same_as<B, geometry_msgs::msg::PoseStamped>) {
         return ros_to_eigen6d(msg.pose);
     }
 
-    else if constexpr (std::same_as<T, geometry_msgs::msg::PoseWithCovarianceStamped>) {
+    else if constexpr (std::same_as<
+                           B, geometry_msgs::msg::PoseWithCovarianceStamped>) {
         return ros_to_eigen6d(msg.pose.pose);
     }
 
-    else if constexpr (std::same_as<T, geometry_msgs::msg::PoseArray>) {
+    else if constexpr (std::same_as<B, geometry_msgs::msg::PoseArray>) {
         const size_t n = msg.poses.size();
         Eigen::Matrix<double, 6, Eigen::Dynamic> X(6, n);
 
-        std::ranges::for_each(
-            std::views::iota(size_t{0}, n),
-            [&](size_t i) {
-                const auto& pose = msg.poses[i];
-                X.col(i) = ros_to_eigen6d(pose);
-            });
+        std::ranges::for_each(std::views::iota(size_t{0}, n), [&](size_t i) {
+            const auto& pose = msg.poses[i];
+            X.col(i) = ros_to_eigen6d(pose);
+        });
 
         return X;
     }
