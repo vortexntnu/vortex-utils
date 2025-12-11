@@ -8,6 +8,11 @@
 namespace vortex::utils::types {
 
 /**
+ * @brief 6x1 column vector of doubles
+*/
+typedef Eigen::Matrix<double, 6, 1> Vector6d;
+
+/**
  * @brief Struct to represent the state vector eta according to eq. 2.3 in
  * Fossen, 2021, containing the position and orientation.
  */
