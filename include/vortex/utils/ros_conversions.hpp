@@ -2,265 +2,160 @@
 #define VORTEX_UTILS__ROS_CONVERSIONS_HPP_
 
 #include <concepts>
-#include <eigen3/Eigen/Dense>
+#include <ranges>
+#include <vector>
+
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
+
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
-#include <ranges>
+
+#include "accessors.hpp"
+#include "concepts.hpp"
 #include "math.hpp"
+#include "types.hpp"
 
 namespace vortex::utils::ros_conversions {
 
-/**
- * @brief Concept describing an Euler pose type expressed in XYZ + RPY form.
- *
- * A type satisfies this concept if it exposes the following fields,
- * all convertible to double:
- * - x, y, z  (position components)
- * - roll, pitch, yaw  (orientation expressed as Euler/RPY angles)
- *
- *
- * @tparam T The candidate type to check.
- */
-template <typename T>
-concept EulerPoseLike = requires(const T& t) {
-    { t.x } -> std::convertible_to<double>;
-    { t.y } -> std::convertible_to<double>;
-    { t.z } -> std::convertible_to<double>;
+using vortex::utils::concepts::EulerPoseLike;
+using vortex::utils::concepts::PoseLike;
+using vortex::utils::concepts::QuatPoseLike;
+using vortex::utils::types::x_of;
+using vortex::utils::types::y_of;
+using vortex::utils::types::z_of;
 
-    { t.roll } -> std::convertible_to<double>;
-    { t.pitch } -> std::convertible_to<double>;
-    { t.yaw } -> std::convertible_to<double>;
-};
+using vortex::utils::types::qw_of;
+using vortex::utils::types::qx_of;
+using vortex::utils::types::qy_of;
+using vortex::utils::types::qz_of;
 
-/**
- * @brief Concept describing a pose type expressed in XYZ + quaternion form.
- *
- * A type satisfies this concept if it exposes the following fields:
- *  - x, y, z              (position components)
- *  - qw, qx, qy, qz       (quaternion orientation)
- *
- *
- * @tparam T The candidate type to check.
- */
-template <typename T>
-concept QuatPoseLike = requires(const T& t) {
-    { t.x } -> std::convertible_to<double>;
-    { t.y } -> std::convertible_to<double>;
-    { t.z } -> std::convertible_to<double>;
+using vortex::utils::types::pitch_of;
+using vortex::utils::types::roll_of;
+using vortex::utils::types::yaw_of;
 
-    { t.qw } -> std::convertible_to<double>;
-    { t.qx } -> std::convertible_to<double>;
-    { t.qy } -> std::convertible_to<double>;
-    { t.qz } -> std::convertible_to<double>;
-};
-
-/**
- * @brief Concept for Eigen-based 6-vector Euler poses:
- *        [x, y, z, roll, pitch, yaw].
- *
- * Accepts:
- *   - Eigen::Matrix<double, 6, 1>
- *
- *
- * @tparam T The candidate type.
- */
-template <typename T>
-concept Eigen6dEuler = std::same_as<T, Eigen::Matrix<double, 6, 1>>;
-
-/**
- * @brief Master concept representing any supported pose-like structure.
- *
- * A type satisfies PoseLike if it matches *any* of the following:
- *   - EulerPoseLike  (XYZ + RPY)
- *   - QuatPoseLike   (XYZ + quaternion)
- *   - Eigen6dEuler   (Matrix<6,1>)
- *
- *
- * @tparam T The candidate pose type.
- */
-template <typename T>
-concept PoseLike = EulerPoseLike<T> || QuatPoseLike<T> || Eigen6dEuler<T>;
-
-/**
- * @brief Convert a Euler pose-like structure into a ROS Pose message.
- *
- * The function reads position (x, y, z) and orientation (roll, pitch, yaw)
- * from the input object and constructs a corresponding
- * `geometry_msgs::msg::Pose`.
- *
- * Orientation is internally converted from Euler angles (roll, pitch, yaw)
- * into a quaternion via `vortex::utils::math::euler_to_quat()`.
- *
- * @tparam T A type satisfying the `EulerPoseLike` concept.
- * @param ref The input `EulerPoseLike` object.
- * @return A `geometry_msgs::msg::Pose` containing the converted pose.
- */
-template <EulerPoseLike T>
-geometry_msgs::msg::Pose pose_like_to_pose_msg(const T& ref) {
+template <PoseLike T>
+geometry_msgs::msg::Pose pose_like_to_pose_msg(const T& pose_like) {
     geometry_msgs::msg::Pose pose;
 
-    pose.position.x = ref.x;
-    pose.position.y = ref.y;
-    pose.position.z = ref.z;
+    pose.position.x = x_of(pose_like);
+    pose.position.y = y_of(pose_like);
+    pose.position.z = z_of(pose_like);
 
-    Eigen::Quaterniond quat =
-        vortex::utils::math::euler_to_quat(ref.roll, ref.pitch, ref.yaw);
-
-    pose.orientation.x = quat.x();
-    pose.orientation.y = quat.y();
-    pose.orientation.z = quat.z();
-    pose.orientation.w = quat.w();
+    if constexpr (QuatPoseLike<T>) {
+        pose.orientation.w = qw_of(pose_like);
+        pose.orientation.x = qx_of(pose_like);
+        pose.orientation.y = qy_of(pose_like);
+        pose.orientation.z = qz_of(pose_like);
+    } else if constexpr (EulerPoseLike<T>) {
+        const auto q = vortex::utils::math::euler_to_quat(
+            roll_of(pose_like), pitch_of(pose_like), yaw_of(pose_like));
+        pose.orientation.w = q.w();
+        pose.orientation.x = q.x();
+        pose.orientation.y = q.y();
+        pose.orientation.z = q.z();
+    }
 
     return pose;
 }
 
-/**
- * @brief Convert a quaternion pose-like structure into a ROS Pose message.
- *
- * The function reads position (x, y, z) and orientation (qw, qx, qy, qz)
- * from the input object and constructs a corresponding
- * `geometry_msgs::msg::Pose`.
- *
- * @tparam T A type satisfying the `QuatPoseLike` concept.
- * @param ref The input `QuatPoseLike` object.
- * @return A `geometry_msgs::msg::Pose` containing the converted pose.
- */
-template <QuatPoseLike T>
-geometry_msgs::msg::Pose pose_like_to_pose_msg(const T& ref) {
-    geometry_msgs::msg::Pose pose;
+template <std::ranges::input_range R>
+    requires PoseLike<std::ranges::range_value_t<R>>
+std::vector<geometry_msgs::msg::Pose> pose_like_to_pose_msgs(const R& poses) {
+    std::vector<geometry_msgs::msg::Pose> out;
 
-    pose.position.x = ref.x;
-    pose.position.y = ref.y;
-    pose.position.z = ref.z;
+    if constexpr (std::ranges::sized_range<R>) {
+        out.reserve(std::ranges::size(poses));
+    }
 
-    pose.orientation.x = ref.qx;
-    pose.orientation.y = ref.qy;
-    pose.orientation.z = ref.qz;
-    pose.orientation.w = ref.qw;
-
-    return pose;
+    for (const auto& p : poses) {
+        out.push_back(pose_like_to_pose_msg(p));
+    }
+    return out;
 }
 
-/**
- * @brief Convert an Eigen 6d-vector [x, y, z, roll, pitch, yaw]
- *        into a ROS Pose message.
- *
- * Orientation is internally converted from v(3), v(4), v(5)
- * into a quaternion via `vortex::utils::math::euler_to_quat()`.
- *
- * @tparam T A type satisfying the `Eigen6dEuler` concept.
- * @param v The 6d-vector containing position and Euler angles.
- * @return A `geometry_msgs::msg::Pose` containing the converted pose.
- */
-template <Eigen6dEuler T>
-geometry_msgs::msg::Pose pose_like_to_pose_msg(const T& v) {
-    geometry_msgs::msg::Pose pose;
-
-    pose.position.x = v(0);
-    pose.position.y = v(1);
-    pose.position.z = v(2);
-
-    Eigen::Quaterniond q = vortex::utils::math::euler_to_quat(v(3), v(4), v(5));
-
-    pose.orientation.x = q.x();
-    pose.orientation.y = q.y();
-    pose.orientation.z = q.z();
-    pose.orientation.w = q.w();
-
-    return pose;
-}
-
-/**
- * @brief Helper concept to check if two types are the same
- *        after removing cv-ref qualifiers.
- *
- * @tparam T First type.
- * @tparam U Second type.
- */
 template <typename T, typename U>
 concept same_bare_as = std::same_as<std::remove_cvref_t<T>, U>;
 
-/**
- * @brief Concept describing ROS pose message types supported by
- * ros_to_eigen6d().
- *
- * Supported types are:
- *
- *  - `geometry_msgs::msg::Pose`
- *
- *  - `geometry_msgs::msg::PoseStamped`
- *
- *  - `geometry_msgs::msg::PoseWithCovarianceStamped`
- *
- *  - `geometry_msgs::msg::PoseArray`
- *
- * @tparam T  The candidate type to test.
- */
 template <typename T>
 concept ROSPoseLike =
     same_bare_as<T, geometry_msgs::msg::Pose> ||
-    same_bare_as<T, geometry_msgs::msg::PoseArray> ||
     same_bare_as<T, geometry_msgs::msg::PoseStamped> ||
-    same_bare_as<T, geometry_msgs::msg::PoseWithCovarianceStamped>;
+    same_bare_as<T, geometry_msgs::msg::PoseWithCovarianceStamped> ||
+    same_bare_as<T, geometry_msgs::msg::PoseArray>;
 
-/**
- * @brief Convert various ROS pose messages to Eigen 6d types.
- *
- * The function supports the following input types:
- *
- * - `geometry_msgs::msg::Pose`
- *
- * - `geometry_msgs::msg::PoseStamped`
- *
- * - `geometry_msgs::msg::PoseWithCovarianceStamped`
- *
- * - `geometry_msgs::msg::PoseArray`
- *
- * @tparam T A type satisfying the `ROSPoseLike` concept.
- * @param msg The input ROS message.
- * @return An `Eigen::Matrix<double, 6, Dynamic>` containing the converted
- * poses where each column is [x, y, z, roll, pitch, yaw]^T.
- */
+inline Eigen::Matrix<double, 6, 1> ros_pose_to_eigen6d(
+    const geometry_msgs::msg::Pose& msg) {
+    Eigen::Matrix<double, 6, 1> v;
+
+    v(0) = msg.position.x;
+    v(1) = msg.position.y;
+    v(2) = msg.position.z;
+
+    Eigen::Quaterniond q(msg.orientation.w, msg.orientation.x,
+                         msg.orientation.y, msg.orientation.z);
+
+    v.tail<3>() = vortex::utils::math::quat_to_euler(q);
+    return v;
+}
+
 template <ROSPoseLike T>
-inline Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const T& msg) {
+Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const T& msg) {
     if constexpr (same_bare_as<T, geometry_msgs::msg::Pose>) {
-        Eigen::Matrix<double, 6, 1> v;
-        v(0) = msg.position.x;
-        v(1) = msg.position.y;
-        v(2) = msg.position.z;
-
-        // ROS/tf2 uses (x, y, z, w)
-        // while Eigen stores quaternions as (w, x, y, z)
-        Eigen::Quaterniond q(msg.orientation.w, msg.orientation.x,
-                             msg.orientation.y, msg.orientation.z);
-
-        const Eigen::Vector3d euler = vortex::utils::math::quat_to_euler(q);
-        v.tail<3>() = euler;
-
-        return v;
-    }
-
-    else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseStamped>) {
-        return ros_to_eigen6d(msg.pose);
-    }
-
-    else if constexpr (same_bare_as<
-                           T, geometry_msgs::msg::PoseWithCovarianceStamped>) {
-        return ros_to_eigen6d(msg.pose.pose);
-    }
-
-    else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseArray>) {
+        return ros_pose_to_eigen6d(msg);
+    } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseStamped>) {
+        return ros_pose_to_eigen6d(msg.pose);
+    } else if constexpr (same_bare_as<
+                             T,
+                             geometry_msgs::msg::PoseWithCovarianceStamped>) {
+        return ros_pose_to_eigen6d(msg.pose.pose);
+    } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseArray>) {
         const size_t n = msg.poses.size();
         Eigen::Matrix<double, 6, Eigen::Dynamic> X(6, n);
 
         std::ranges::for_each(std::views::iota(size_t{0}, n), [&](size_t i) {
             const auto& pose = msg.poses[i];
-            X.col(i) = ros_to_eigen6d(pose);
+            X.col(i) = ros_pose_to_eigen6d(pose);
         });
 
         return X;
+    }
+}
+
+using PoseQuatEigen = vortex::utils::types::PoseQuatEigen;
+
+inline PoseQuatEigen ros_pose_to_pose_quat(
+    const geometry_msgs::msg::Pose& pose) {
+    PoseQuatEigen p;
+    p.position = {pose.position.x, pose.position.y, pose.position.z};
+
+    p.orientation = Eigen::Quaterniond(pose.orientation.w, pose.orientation.x,
+                                       pose.orientation.y, pose.orientation.z)
+                        .normalized();
+
+    return p;
+}
+
+template <ROSPoseLike T>
+std::vector<PoseQuatEigen> ros_to_pose_quat(const T& msg) {
+    if constexpr (same_bare_as<T, geometry_msgs::msg::Pose>) {
+        return {ros_pose_to_pose_quat(msg)};
+    } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseStamped>) {
+        return ros_to_pose_quat(msg.pose);
+    } else if constexpr (same_bare_as<
+                             T,
+                             geometry_msgs::msg::PoseWithCovarianceStamped>) {
+        return ros_to_pose_quat(msg.pose.pose);
+    } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseArray>) {
+        std::vector<PoseQuatEigen> poses;
+        poses.reserve(msg.poses.size());
+
+        for (const auto& pose : msg.poses) {
+            poses.push_back(ros_pose_to_pose_quat(pose));
+        }
+        return poses;
     }
 }
 
