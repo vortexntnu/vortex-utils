@@ -124,22 +124,22 @@ Eigen::Matrix<double, 6, Eigen::Dynamic> ros_to_eigen6d(const T& msg) {
     }
 }
 
-using PoseQuatEigen = vortex::utils::types::PoseQuatEigen;
-
-inline PoseQuatEigen ros_pose_to_pose_quat(
+inline vortex::utils::types::Pose ros_pose_to_pose_quat(
     const geometry_msgs::msg::Pose& pose) {
-    PoseQuatEigen p;
-    p.position = {pose.position.x, pose.position.y, pose.position.z};
+    vortex::utils::types::Pose p;
+    p.x = pose.position.x;
+    p.y = pose.position.y;
+    p.z = pose.position.z;
 
-    p.orientation = Eigen::Quaterniond(pose.orientation.w, pose.orientation.x,
-                                       pose.orientation.y, pose.orientation.z)
-                        .normalized();
-
+    p.qw = pose.orientation.w;
+    p.qx = pose.orientation.x;
+    p.qy = pose.orientation.y;
+    p.qz = pose.orientation.z;
     return p;
 }
 
 template <ROSPoseLike T>
-std::vector<PoseQuatEigen> ros_to_pose_quat(const T& msg) {
+std::vector<vortex::utils::types::Pose> ros_to_pose_quat(const T& msg) {
     if constexpr (same_bare_as<T, geometry_msgs::msg::Pose>) {
         return {ros_pose_to_pose_quat(msg)};
     } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseStamped>) {
@@ -149,7 +149,7 @@ std::vector<PoseQuatEigen> ros_to_pose_quat(const T& msg) {
                              geometry_msgs::msg::PoseWithCovarianceStamped>) {
         return ros_to_pose_quat(msg.pose.pose);
     } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseArray>) {
-        std::vector<PoseQuatEigen> poses;
+        std::vector<vortex::utils::types::Pose> poses;
         poses.reserve(msg.poses.size());
 
         for (const auto& pose : msg.poses) {

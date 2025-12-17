@@ -48,27 +48,27 @@ inline double qz_of(const EtaQuat& e) {
     return e.qz;
 }
 
-inline double x_of(const PoseQuatEigen& p) {
-    return p.position.x();
+inline double x_of(const Pose& p) {
+    return p.x;
 }
-inline double y_of(const PoseQuatEigen& p) {
-    return p.position.y();
+inline double y_of(const Pose& p) {
+    return p.y;
 }
-inline double z_of(const PoseQuatEigen& p) {
-    return p.position.z();
+inline double z_of(const Pose& p) {
+    return p.z;
 }
 
-inline double qw_of(const PoseQuatEigen& p) {
-    return p.orientation.w();
+inline double qw_of(const Pose& p) {
+    return p.qw;
 }
-inline double qx_of(const PoseQuatEigen& p) {
-    return p.orientation.x();
+inline double qx_of(const Pose& p) {
+    return p.qx;
 }
-inline double qy_of(const PoseQuatEigen& p) {
-    return p.orientation.y();
+inline double qy_of(const Pose& p) {
+    return p.qy;
 }
-inline double qz_of(const PoseQuatEigen& p) {
-    return p.orientation.z();
+inline double qz_of(const Pose& p) {
+    return p.qz;
 }
 
 }  // namespace vortex::utils::types
