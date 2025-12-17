@@ -1,76 +1,60 @@
 #ifndef VORTEX_UTILS__ACCESSORS_HPP_
 #define VORTEX_UTILS__ACCESSORS_HPP_
 
-#include "types.hpp"
+#include "member_concepts.hpp"
 
-namespace vortex::utils::types {
+namespace vortex::utils {
 
-inline double x_of(const Eta& e) {
-    return e.x;
-}
-inline double y_of(const Eta& e) {
-    return e.y;
-}
-inline double z_of(const Eta& e) {
-    return e.z;
+template <concepts::HasPositionMembers T>
+constexpr double x_of(const T& t) {
+    return t.x;
 }
 
-inline double roll_of(const Eta& e) {
-    return e.roll;
-}
-inline double pitch_of(const Eta& e) {
-    return e.pitch;
-}
-inline double yaw_of(const Eta& e) {
-    return e.yaw;
+template <concepts::HasPositionMembers T>
+constexpr double y_of(const T& t) {
+    return t.y;
 }
 
-inline double x_of(const EtaQuat& e) {
-    return e.x;
-}
-inline double y_of(const EtaQuat& e) {
-    return e.y;
-}
-inline double z_of(const EtaQuat& e) {
-    return e.z;
+template <concepts::HasPositionMembers T>
+constexpr double z_of(const T& t) {
+    return t.z;
 }
 
-inline double qw_of(const EtaQuat& e) {
-    return e.qw;
-}
-inline double qx_of(const EtaQuat& e) {
-    return e.qx;
-}
-inline double qy_of(const EtaQuat& e) {
-    return e.qy;
-}
-inline double qz_of(const EtaQuat& e) {
-    return e.qz;
+template <concepts::HasEulerMembers T>
+constexpr double roll_of(const T& t) {
+    return t.roll;
 }
 
-inline double x_of(const Pose& p) {
-    return p.x;
-}
-inline double y_of(const Pose& p) {
-    return p.y;
-}
-inline double z_of(const Pose& p) {
-    return p.z;
+template <concepts::HasEulerMembers T>
+constexpr double pitch_of(const T& t) {
+    return t.pitch;
 }
 
-inline double qw_of(const Pose& p) {
-    return p.qw;
-}
-inline double qx_of(const Pose& p) {
-    return p.qx;
-}
-inline double qy_of(const Pose& p) {
-    return p.qy;
-}
-inline double qz_of(const Pose& p) {
-    return p.qz;
+template <concepts::HasEulerMembers T>
+constexpr double yaw_of(const T& t) {
+    return t.yaw;
 }
 
-}  // namespace vortex::utils::types
+template <concepts::HasQuaternionMembers T>
+constexpr double qw_of(const T& q) {
+    return q.qw;
+}
+
+template <concepts::HasQuaternionMembers T>
+constexpr double qx_of(const T& q) {
+    return q.qx;
+}
+
+template <concepts::HasQuaternionMembers T>
+constexpr double qy_of(const T& q) {
+    return q.qy;
+}
+
+template <concepts::HasQuaternionMembers T>
+constexpr double qz_of(const T& q) {
+    return q.qz;
+}
+
+}  // namespace vortex::utils
 
 #endif  // VORTEX_UTILS__ACCESSORS_HPP_
