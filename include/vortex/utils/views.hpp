@@ -14,19 +14,6 @@ using vortex::utils::concepts::PositionLike;
 using vortex::utils::concepts::QuaternionLike;
 using vortex::utils::concepts::QuatPoseLike;
 
-using vortex::utils::types::x_of;
-using vortex::utils::types::y_of;
-using vortex::utils::types::z_of;
-
-using vortex::utils::types::qw_of;
-using vortex::utils::types::qx_of;
-using vortex::utils::types::qy_of;
-using vortex::utils::types::qz_of;
-
-using vortex::utils::types::pitch_of;
-using vortex::utils::types::roll_of;
-using vortex::utils::types::yaw_of;
-
 template <PositionLike T>
 inline Eigen::Vector3d pos_vector(const T& t) {
     return Eigen::Vector3d{x_of(t), y_of(t), z_of(t)};

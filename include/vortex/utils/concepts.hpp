@@ -2,6 +2,7 @@
 #define VORTEX_UTILS__CONCEPTS_HPP_
 
 #include <concepts>
+#include "accessors.hpp"
 
 namespace vortex::utils::concepts {
 
@@ -28,10 +29,10 @@ concept EulerLike = requires(const T& t) {
 };
 
 template <typename T>
-concept QuatPoseLike = PositionLike<T> && QuaternionLike<T>;
+concept QuatPoseLike = PositionLike<T> && QuaternionLike<T> && (!EulerLike<T>);
 
 template <typename T>
-concept EulerPoseLike = PositionLike<T> && EulerLike<T>;
+concept EulerPoseLike = PositionLike<T> && EulerLike<T> && (!QuaternionLike<T>);
 
 template <typename T>
 concept PoseLike = QuatPoseLike<T> || EulerPoseLike<T>;
