@@ -13,8 +13,8 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
-#include "accessors.hpp"
-#include "concepts.hpp"
+#include "concepts/accessors.hpp"
+#include "concepts/concepts.hpp"
 #include "math.hpp"
 #include "types.hpp"
 

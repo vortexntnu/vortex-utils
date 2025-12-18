@@ -3,9 +3,9 @@
 
 #include <eigen3/Eigen/Core>
 
-#include "vortex/utils/accessors.hpp"
-#include "vortex/utils/concepts.hpp"
-#include "vortex/utils/views.hpp"
+#include "vortex/utils/concepts/accessors.hpp"
+#include "vortex/utils/concepts/concepts.hpp"
+#include "vortex/utils/concepts/views.hpp"
 
 struct HasPositionAndEuler {
     double x, y, z;
