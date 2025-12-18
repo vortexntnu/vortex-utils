@@ -11,17 +11,21 @@ namespace vortex::utils::types {
  * @brief Struct to represent the state vector eta according to eq. 2.3 in
  * Fossen, 2021, containing the position and orientation.
  */
-struct Eta;
+struct PoseEuler;
 
 /**
  * @brief Struct to represent the state vector eta according to eq. 2.3 in
  * Fossen, 2021, containing the position and orientation as quaternion.
  */
-struct EtaQuat;
-
 struct Pose;
 
-struct Eta {
+/**
+ * @brief Struct to represent the state vector nu according to eq. 2.5 in
+ * Fossen, 2021, containing the linear and angular velocities.
+ */
+struct Twist;
+
+struct PoseEuler {
     double x{};
     double y{};
     double z{};
@@ -29,8 +33,8 @@ struct Eta {
     double pitch{};
     double yaw{};
 
-    Eta operator-(const Eta& other) const {
-        Eta eta;
+    PoseEuler operator-(const PoseEuler& other) const {
+        PoseEuler eta;
         eta.x = x - other.x;
         eta.y = y - other.y;
         eta.z = z - other.z;
@@ -127,13 +131,13 @@ struct Eta {
         return j_matrix;
     }
     /**
-     * @brief Convert to EtaQuat
-     * @return EtaQuat
+     * @brief Convert to Pose
+     * @return Pose
      */
-    EtaQuat as_eta_quat() const;
+    Pose as_pose() const;
 };
 
-struct EtaQuat {
+struct Pose {
     double x{};
     double y{};
     double z{};
@@ -169,8 +173,8 @@ struct EtaQuat {
         return Eigen::Vector<double, 7>{x, y, z, qw, qx, qy, qz};
     }
 
-    EtaQuat operator-(const EtaQuat& other) const {
-        EtaQuat eta;
+    Pose operator-(const Pose& other) const {
+        Pose eta;
         eta.x = x - other.x;
         eta.y = y - other.y;
         eta.z = z - other.z;
@@ -219,17 +223,17 @@ struct EtaQuat {
         return j_matrix;
     }
     /**
-     * @brief Convert to Eta with Euler angles
-     * @return Eta
+     * @brief Convert to PoseEuler with Euler angles
+     * @return PoseEuler
      */
-    Eta as_eta_euler() const;
+    PoseEuler as_pose_euler() const;
 };
 
 /**
  * @brief Struct to represent the state vector nu according to eq. 2.5 in
  * Fossen, 2021, containing the linear and angular velocities.
  */
-struct Nu {
+struct Twist {
     double u{};
     double v{};
     double w{};
@@ -237,8 +241,8 @@ struct Nu {
     double q{};
     double r{};
 
-    Nu operator-(const Nu& other) const {
-        Nu nu;
+    Twist operator-(const Twist& other) const {
+        Twist nu;
         nu.u = u - other.u;
         nu.v = v - other.v;
         nu.w = w - other.w;
@@ -257,42 +261,32 @@ struct Nu {
     }
 };
 
-inline EtaQuat Eta::as_eta_quat() const {
+inline Pose PoseEuler::as_pose() const {
     Eigen::Quaterniond quat =
         vortex::utils::math::euler_to_quat(roll, pitch, yaw);
 
-    EtaQuat eta_quat{.x = x,
-                     .y = y,
-                     .z = z,
-                     .qw = quat.w(),
-                     .qx = quat.x(),
-                     .qy = quat.y(),
-                     .qz = quat.z()};
+    Pose eta_quat{.x = x,
+                  .y = y,
+                  .z = z,
+                  .qw = quat.w(),
+                  .qx = quat.x(),
+                  .qy = quat.y(),
+                  .qz = quat.z()};
     return eta_quat;
 }
 
-inline Eta EtaQuat::as_eta_euler() const {
+inline PoseEuler Pose::as_pose_euler() const {
     Eigen::Vector3d euler_angles =
         vortex::utils::math::quat_to_euler(ori_quaternion());
 
-    Eta eta{.x = x,
-            .y = y,
-            .z = z,
-            .roll = euler_angles(0),
-            .pitch = euler_angles(1),
-            .yaw = euler_angles(2)};
+    PoseEuler eta{.x = x,
+                  .y = y,
+                  .z = z,
+                  .roll = euler_angles(0),
+                  .pitch = euler_angles(1),
+                  .yaw = euler_angles(2)};
     return eta;
 }
-
-struct Pose {
-    double x{};
-    double y{};
-    double z{};
-    double qw{1.0};
-    double qx{};
-    double qy{};
-    double qz{};
-};
 
 }  // namespace vortex::utils::types
 

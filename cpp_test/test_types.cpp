@@ -10,7 +10,7 @@ class TypesTests : public ::testing::Test {
 };
 
 TEST_F(TypesTests, test_eta) {
-    vortex::utils::types::Eta eta;
+    vortex::utils::types::PoseEuler eta;
     // Test correct zero initialization
     EXPECT_EQ(eta.x, 0.0);
     EXPECT_EQ(eta.y, 0.0);
@@ -42,8 +42,8 @@ TEST_F(TypesTests, test_eta) {
     EXPECT_TRUE(result_v.isApprox(expected_v, 1e-12));
 
     // Test operator-
-    vortex::utils::types::Eta other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3};
-    vortex::utils::types::Eta diff{eta - other};
+    vortex::utils::types::PoseEuler other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3};
+    vortex::utils::types::PoseEuler diff{eta - other};
     EXPECT_NEAR(diff.x, 4.0, 1e-12);
     EXPECT_NEAR(diff.y, -6.0, 1e-12);
     EXPECT_NEAR(diff.z, -0.9, 1e-12);
@@ -53,7 +53,7 @@ TEST_F(TypesTests, test_eta) {
 }
 
 TEST_F(TypesTests, test_eta_quat) {
-    vortex::utils::types::EtaQuat eta_quat;
+    vortex::utils::types::Pose eta_quat;
     // Test correct zero initialization
     EXPECT_EQ(eta_quat.x, 0.0);
     EXPECT_EQ(eta_quat.y, 0.0);
@@ -76,8 +76,8 @@ TEST_F(TypesTests, test_eta_quat) {
     EXPECT_TRUE(result_v.isApprox(expected_v, 1e-12));
 
     // Test operator-
-    vortex::utils::types::EtaQuat other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3, 0.4};
-    vortex::utils::types::EtaQuat diff{eta_quat - other};
+    vortex::utils::types::Pose other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3, 0.4};
+    vortex::utils::types::Pose diff{eta_quat - other};
     auto pos = diff.pos_vector();
     EXPECT_TRUE(pos.isApprox(Eigen::Vector3d(4.0, -6.0, -0.9), 1e-12));
     auto q = diff.ori_quaternion();
@@ -88,7 +88,7 @@ TEST_F(TypesTests, test_eta_quat) {
 }
 
 TEST_F(TypesTests, test_nu) {
-    vortex::utils::types::Nu nu;
+    vortex::utils::types::Twist nu;
     // Test correct zero initialization
     EXPECT_EQ(nu.u, 0.0);
     EXPECT_EQ(nu.v, 0.0);
@@ -109,8 +109,8 @@ TEST_F(TypesTests, test_nu) {
     EXPECT_TRUE(result_v.isApprox(expected_v, 1e-12));
 
     // Test operator-
-    vortex::utils::types::Nu other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3};
-    vortex::utils::types::Nu diff{nu - other};
+    vortex::utils::types::Twist other{1.0, 2.0, 3.0, 0.1, 0.2, 0.3};
+    vortex::utils::types::Twist diff{nu - other};
     EXPECT_NEAR(diff.u, 4.0, 1e-12);
     EXPECT_NEAR(diff.v, -6.0, 1e-12);
     EXPECT_NEAR(diff.w, -0.9, 1e-12);
