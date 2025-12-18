@@ -5,6 +5,9 @@
 
 namespace vortex::utils {
 
+// Accessors functions for types that satisfy concepts in "member_concepts.hpp"
+// so that these types satisfy the requirements of concepts in "concepts.hpp"
+
 template <concepts::HasPositionMembers T>
 constexpr double x_of(const T& t) {
     return t.x;
