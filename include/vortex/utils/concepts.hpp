@@ -3,18 +3,18 @@
 
 #include <concepts>
 
-#include "accessors.hpp"
-
 namespace vortex::utils::concepts {
 
 /**
  * @brief Concept for types that expose 3D positional components.
  *
- * A type satisfies PositionLike if it provides read access to
- * Cartesian coordinates via the accessors:
- *  - x_of(t)
- *  - y_of(t)
- *  - z_of(t)
+ * A type satisfies PositionLike if it contains public members:
+ *
+ *  - `x`
+ *
+ *  - `y`
+ *
+ *  - `z`
  *
  * Each component must be convertible to double.
  *
@@ -22,41 +22,46 @@ namespace vortex::utils::concepts {
  */
 template <typename T>
 concept PositionLike = requires(const T& t) {
-    { x_of(t) } -> std::convertible_to<double>;
-    { y_of(t) } -> std::convertible_to<double>;
-    { z_of(t) } -> std::convertible_to<double>;
+    { t.x } -> std::convertible_to<double>;
+    { t.y } -> std::convertible_to<double>;
+    { t.z } -> std::convertible_to<double>;
 };
 
 /**
  * @brief Concept for types that expose orientation as a quaternion.
  *
- * A type satisfies QuaternionLike if it provides read access to
- * quaternion components via the accessors:
- *  - qw_of(q)
- *  - qx_of(q)
- *  - qy_of(q)
- *  - qz_of(q)
+ * A type satisfies QuaternionLike if it contains public members:
+ *
+ *  - `qw`
+ *
+ *  - `qx`
+ *
+ *  - `qy`
+ *
+ *  - `qz`
  *
  * Each component must be convertible to double.
  *
  * @tparam T Type to be checked
  */
 template <typename T>
-concept QuaternionLike = requires(const T& q) {
-    { qw_of(q) } -> std::convertible_to<double>;
-    { qx_of(q) } -> std::convertible_to<double>;
-    { qy_of(q) } -> std::convertible_to<double>;
-    { qz_of(q) } -> std::convertible_to<double>;
+concept QuaternionLike = requires(const T& t) {
+    { t.qw } -> std::convertible_to<double>;
+    { t.qx } -> std::convertible_to<double>;
+    { t.qy } -> std::convertible_to<double>;
+    { t.qz } -> std::convertible_to<double>;
 };
 
 /**
  * @brief Concept for types that expose orientation as Euler angles.
  *
- * A type satisfies EulerLike if it provides read access to
- * orientation expressed as roll, pitch, and yaw via the accessors:
- *  - roll_of(t)
- *  - pitch_of(t)
- *  - yaw_of(t)
+ * A type satisfies EulerLike if it contains public members:
+ *
+ *  - `roll`
+ *
+ *  - `pitch`
+ *
+ *  - `yaw`
  *
  * Each component must be convertible to double.
  *
@@ -64,9 +69,9 @@ concept QuaternionLike = requires(const T& q) {
  */
 template <typename T>
 concept EulerLike = requires(const T& t) {
-    { roll_of(t) } -> std::convertible_to<double>;
-    { pitch_of(t) } -> std::convertible_to<double>;
-    { yaw_of(t) } -> std::convertible_to<double>;
+    { t.roll } -> std::convertible_to<double>;
+    { t.pitch } -> std::convertible_to<double>;
+    { t.yaw } -> std::convertible_to<double>;
 };
 
 /**

@@ -3,9 +3,7 @@
 
 #include <eigen3/Eigen/Core>
 
-#include "vortex/utils/concepts/accessors.hpp"
-#include "vortex/utils/concepts/concepts.hpp"
-#include "vortex/utils/concepts/views.hpp"
+#include "vortex/utils/concepts.hpp"
 
 struct HasPositionAndEuler {
     double x, y, z;
@@ -52,24 +50,6 @@ struct HasEulerAndQuaternionMembers {
     double roll, pitch, yaw;
     double qw, qx, qy, qz;
 };
-
-// ---------- Member Concepts ----------
-
-static_assert(vortex::utils::concepts::HasPositionMembers<HasPositionAndEuler>);
-static_assert(vortex::utils::concepts::HasEulerMembers<HasPositionAndEuler>);
-static_assert(
-    !vortex::utils::concepts::HasQuaternionMembers<HasPositionAndEuler>);
-
-static_assert(
-    vortex::utils::concepts::HasQuaternionMembers<HasPositionAndQuaternion>);
-static_assert(
-    !vortex::utils::concepts::HasEulerMembers<HasPositionAndQuaternion>);
-
-static_assert(!vortex::utils::concepts::HasPositionMembers<EulerOnly>);
-static_assert(
-    !vortex::utils::concepts::HasEulerMembers<IncompleteEulerMembers>);
-static_assert(!vortex::utils::concepts::HasQuaternionMembers<
-              IncompleteQuaternionMembers>);
 
 // ---------- PositionLike ----------
 
@@ -125,37 +105,3 @@ static_assert(
 
 static_assert(!vortex::utils::concepts::PositionLike<Eigen::Vector3d>,
               "Eigen::Vector3d must NOT satisfy PositionLike");
-
-// ---------- View Tests ----------
-
-template <typename T>
-concept AcceptsPosVector =
-    requires(const T& t) { vortex::utils::views::pos_vector(t); };
-
-template <typename T>
-concept AcceptsOriVector =
-    requires(const T& t) { vortex::utils::views::ori_vector(t); };
-
-template <typename T>
-concept AcceptsOriQuaternion =
-    requires(const T& t) { vortex::utils::views::ori_quaternion(t); };
-
-// ---------- pos_vector ----------
-
-static_assert(AcceptsPosVector<HasPositionAndEuler>);
-static_assert(AcceptsPosVector<HasPositionAndQuaternion>);
-static_assert(AcceptsPosVector<PositionOnly>);
-static_assert(AcceptsPosVector<IncompleteEulerMembers>);
-
-// ---------- ori_vector ----------
-
-static_assert(AcceptsOriVector<HasPositionAndEuler>);
-static_assert(!AcceptsOriVector<HasPositionAndQuaternion>);
-static_assert(!AcceptsOriVector<IncompleteEulerMembers>);
-static_assert(!AcceptsOriVector<WrongEulerMemberType>);
-
-// ---------- ori_quaternion ----------
-
-static_assert(AcceptsOriQuaternion<HasPositionAndQuaternion>);
-static_assert(!AcceptsOriQuaternion<HasPositionAndEuler>);
-static_assert(!AcceptsOriQuaternion<PositionOnly>);

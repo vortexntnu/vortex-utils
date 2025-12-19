@@ -13,16 +13,11 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
-#include "concepts/accessors.hpp"
-#include "concepts/concepts.hpp"
+#include "concepts.hpp"
 #include "math.hpp"
 #include "types.hpp"
 
 namespace vortex::utils::ros_conversions {
-
-using vortex::utils::concepts::EulerPoseLike;
-using vortex::utils::concepts::PoseLike;
-using vortex::utils::concepts::QuatPoseLike;
 
 /**
  * @brief Helper concept to check if two types are the same
@@ -67,22 +62,22 @@ concept ROSPoseLike =
  * @param pose_like Input pose object
  * @return geometry_msgs::msg::Pose ROS pose message
  */
-template <PoseLike T>
+template <vortex::utils::concepts::PoseLike T>
 geometry_msgs::msg::Pose to_pose_msg(const T& pose_like) {
     geometry_msgs::msg::Pose pose;
 
-    pose.position.x = x_of(pose_like);
-    pose.position.y = y_of(pose_like);
-    pose.position.z = z_of(pose_like);
+    pose.position.x = pose_like.x;
+    pose.position.y = pose_like.y;
+    pose.position.z = pose_like.z;
 
-    if constexpr (QuatPoseLike<T>) {
-        pose.orientation.w = qw_of(pose_like);
-        pose.orientation.x = qx_of(pose_like);
-        pose.orientation.y = qy_of(pose_like);
-        pose.orientation.z = qz_of(pose_like);
-    } else if constexpr (EulerPoseLike<T>) {
+    if constexpr (vortex::utils::concepts::QuatPoseLike<T>) {
+        pose.orientation.w = pose_like.qw;
+        pose.orientation.x = pose_like.qx;
+        pose.orientation.y = pose_like.qy;
+        pose.orientation.z = pose_like.qz;
+    } else if constexpr (vortex::utils::concepts::EulerPoseLike<T>) {
         const auto q = vortex::utils::math::euler_to_quat(
-            roll_of(pose_like), pitch_of(pose_like), yaw_of(pose_like));
+            pose_like.roll, pose_like.pitch, pose_like.yaw);
         pose.orientation.w = q.w();
         pose.orientation.x = q.x();
         pose.orientation.y = q.y();
@@ -103,7 +98,7 @@ geometry_msgs::msg::Pose to_pose_msg(const T& pose_like) {
  * @return std::vector<geometry_msgs::msg::Pose> Converted ROS poses
  */
 template <std::ranges::input_range R>
-    requires PoseLike<std::ranges::range_value_t<R>>
+    requires vortex::utils::concepts::PoseLike<std::ranges::range_value_t<R>>
 std::vector<geometry_msgs::msg::Pose> to_pose_msgs(const R& poses) {
     std::vector<geometry_msgs::msg::Pose> out;
 
