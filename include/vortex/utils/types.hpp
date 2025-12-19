@@ -8,19 +8,19 @@
 namespace vortex::utils::types {
 
 /**
- * @brief Struct to represent the state vector eta according to eq. 2.3 in
- * Fossen, 2021, containing the position and orientation.
+ * @brief Struct to represent the pose vector according to eq. 2.3 in
+ * Fossen, 2021, containing the position and orientation as euler angles.
  */
 struct PoseEuler;
 
 /**
- * @brief Struct to represent the state vector eta according to eq. 2.3 in
+ * @brief Struct to represent the pose vector according to eq. 2.3 in
  * Fossen, 2021, containing the position and orientation as quaternion.
  */
 struct Pose;
 
 /**
- * @brief Struct to represent the state vector nu according to eq. 2.5 in
+ * @brief Struct to represent the velocity vector according to eq. 2.5 in
  * Fossen, 2021, containing the linear and angular velocities.
  */
 struct Twist;
