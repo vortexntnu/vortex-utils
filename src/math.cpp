@@ -138,12 +138,13 @@ Eigen::Quaterniond average_quaternions(
             "average_quaternions: input vector must not be empty");
     }
 
-    Eigen::Matrix4d M = Eigen::Matrix4d::Zero();
+    Eigen::Matrix4d scatter_matrix = Eigen::Matrix4d::Zero();
     std::ranges::for_each(quaternions, [&](const auto& q) {
-        M += q.normalized().coeffs() * q.normalized().coeffs().transpose();
+        scatter_matrix +=
+            q.normalized().coeffs() * q.normalized().coeffs().transpose();
     });
 
-    Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(M);
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(scatter_matrix);
 
     if (eigensolver.info() != Eigen::Success) {
         throw std::runtime_error(
@@ -158,7 +159,7 @@ Eigen::Quaterniond average_quaternions(
             "average_quaternions_weighted: average orientation is not unique");
     }
 
-    Eigen::Vector4d eigenvector = eigensolver.eigenvectors().col(3);
+    const Eigen::Vector4d eigenvector = eigensolver.eigenvectors().col(3);
 
     Eigen::Quaterniond avg_q;
     avg_q.x() = eigenvector(0);
