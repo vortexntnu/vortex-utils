@@ -11,6 +11,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include "concepts.hpp"
@@ -39,6 +40,8 @@ concept same_bare_as = std::same_as<std::remove_cvref_t<T>, U>;
  *
  *  - `geometry_msgs::msg::PoseStamped`
  *
+ *  - `geometry_msgs::msg::PoseWithCovariance`
+ *
  *  - `geometry_msgs::msg::PoseWithCovarianceStamped`
  *
  *  - `geometry_msgs::msg::PoseArray`
@@ -49,6 +52,7 @@ template <typename T>
 concept ROSPoseLike =
     same_bare_as<T, geometry_msgs::msg::Pose> ||
     same_bare_as<T, geometry_msgs::msg::PoseStamped> ||
+    same_bare_as<T, geometry_msgs::msg::PoseWithCovariance> ||
     same_bare_as<T, geometry_msgs::msg::PoseWithCovarianceStamped> ||
     same_bare_as<T, geometry_msgs::msg::PoseArray>;
 
@@ -140,6 +144,8 @@ inline vortex::utils::types::Pose ros_pose_to_pose(
  *
  *  - `geometry_msgs::msg::PoseStamped`
  *
+ *  - `geometry_msgs::msg::PoseWithCovariance`
+ *
  *  - `geometry_msgs::msg::PoseWithCovarianceStamped`
  *
  *  - `geometry_msgs::msg::PoseArray`
@@ -156,11 +162,14 @@ std::vector<vortex::utils::types::Pose> ros_to_pose_vec(const T& msg) {
     if constexpr (same_bare_as<T, geometry_msgs::msg::Pose>) {
         return {ros_pose_to_pose(msg)};
     } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseStamped>) {
-        return ros_pose_to_pose(msg.pose);
+        return {ros_pose_to_pose(msg.pose)};
+    } else if constexpr (same_bare_as<T,
+                                      geometry_msgs::msg::PoseWithCovariance>) {
+        return {ros_pose_to_pose(msg.pose)};
     } else if constexpr (same_bare_as<
                              T,
                              geometry_msgs::msg::PoseWithCovarianceStamped>) {
-        return ros_pose_to_pose(msg.pose.pose);
+        return {ros_pose_to_pose(msg.pose.pose)};
     } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseArray>) {
         std::vector<vortex::utils::types::Pose> poses;
         poses.reserve(msg.poses.size());

@@ -148,6 +148,75 @@ TEST(ros_to_pose_vec, pose) {
     EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
 }
 
+TEST(ros_to_pose_vec, pose_stamped) {
+    geometry_msgs::msg::PoseStamped p;
+    p.pose.position.x = 1;
+    p.pose.position.y = 2;
+    p.pose.position.z = 3;
+    p.pose.orientation.w = 1;
+    p.pose.orientation.x = 0;
+    p.pose.orientation.y = 0;
+    p.pose.orientation.z = 0;
+
+    auto v = vortex::utils::ros_conversions::ros_to_pose_vec(p);
+
+    ASSERT_EQ(v.size(), 1);
+    EXPECT_NEAR(v[0].x, 1.0, 1e-6);
+    EXPECT_NEAR(v[0].y, 2.0, 1e-6);
+    EXPECT_NEAR(v[0].z, 3.0, 1e-6);
+
+    EXPECT_NEAR(v[0].qw, 1.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+}
+
+TEST(ros_to_pose_vec, pose_with_covariance) {
+    geometry_msgs::msg::PoseWithCovariance p;
+    p.pose.position.x = 1;
+    p.pose.position.y = 2;
+    p.pose.position.z = 3;
+    p.pose.orientation.w = 1;
+    p.pose.orientation.x = 0;
+    p.pose.orientation.y = 0;
+    p.pose.orientation.z = 0;
+
+    auto v = vortex::utils::ros_conversions::ros_to_pose_vec(p);
+
+    ASSERT_EQ(v.size(), 1);
+    EXPECT_NEAR(v[0].x, 1.0, 1e-6);
+    EXPECT_NEAR(v[0].y, 2.0, 1e-6);
+    EXPECT_NEAR(v[0].z, 3.0, 1e-6);
+
+    EXPECT_NEAR(v[0].qw, 1.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+}
+
+TEST(ros_to_pose_vec, pose_with_covariance_stamped) {
+    geometry_msgs::msg::PoseWithCovarianceStamped p;
+    p.pose.pose.position.x = 1;
+    p.pose.pose.position.y = 2;
+    p.pose.pose.position.z = 3;
+    p.pose.pose.orientation.w = 1;
+    p.pose.pose.orientation.x = 0;
+    p.pose.pose.orientation.y = 0;
+    p.pose.pose.orientation.z = 0;
+
+    auto v = vortex::utils::ros_conversions::ros_to_pose_vec(p);
+
+    ASSERT_EQ(v.size(), 1);
+    EXPECT_NEAR(v[0].x, 1.0, 1e-6);
+    EXPECT_NEAR(v[0].y, 2.0, 1e-6);
+    EXPECT_NEAR(v[0].z, 3.0, 1e-6);
+
+    EXPECT_NEAR(v[0].qw, 1.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+    EXPECT_NEAR(v[0].qz, 0.0, 1e-6);
+}
+
 TEST(ros_to_pose_vec, pose_array) {
     geometry_msgs::msg::PoseArray arr;
     arr.poses.resize(2);
