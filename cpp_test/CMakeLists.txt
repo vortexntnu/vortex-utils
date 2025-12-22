@@ -23,3 +23,26 @@ target_link_libraries(
 ament_target_dependencies(${TEST_BINARY_NAME} PUBLIC Eigen3)
 
 gtest_discover_tests(${TEST_BINARY_NAME})
+
+set(TEST_BINARY_ROS_NAME ${PROJECT_NAME}_ros_test)
+
+add_executable(
+  ${TEST_BINARY_ROS_NAME}
+  test_ros_transforms.cpp
+)
+
+target_link_libraries(
+  ${TEST_BINARY_ROS_NAME}
+    ${PROJECT_NAME}
+    GTest::GTest
+)
+
+ament_target_dependencies(
+  ${TEST_BINARY_ROS_NAME}
+  rclcpp
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+)
+
+gtest_discover_tests(${TEST_BINARY_ROS_NAME})
