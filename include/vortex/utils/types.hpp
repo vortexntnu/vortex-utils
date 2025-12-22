@@ -147,6 +147,24 @@ struct Pose {
     double qz{};
 
     /**
+     * @brief Construct a Pose from eigen components.
+     * @param pos Eigen::Vector3d position component
+     * @param ori Eigen::Quaterniond orientation component
+     * @return Pose with normalized quaternion
+     */
+    static Pose from_eigen(const Eigen::Vector3d& pos,
+                           const Eigen::Quaterniond& ori) {
+        const Eigen::Quaterniond q = ori.normalized();
+        return Pose{.x = pos.x(),
+                    .y = pos.y(),
+                    .z = pos.z(),
+                    .qw = q.w(),
+                    .qx = q.x(),
+                    .qy = q.y(),
+                    .qz = q.z()};
+    }
+
+    /**
      * @brief Get the position vector (x, y, z).
      * @return Eigen::Vector3d{x, y, z}
      */
