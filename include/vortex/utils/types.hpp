@@ -155,7 +155,13 @@ struct Pose {
     static Pose from_eigen(const Eigen::Vector3d& pos,
                            const Eigen::Quaterniond& ori) {
         const Eigen::Quaterniond q = ori.normalized();
-        return Pose{pos.x(), pos.y(), pos.z(), q.w(), q.x(), q.y(), q.z()};
+        return Pose{.x = pos.x(),
+                    .y = pos.y(),
+                    .z = pos.z(),
+                    .qw = q.w(),
+                    .qx = q.x(),
+                    .qy = q.y(),
+                    .qz = q.z()};
     }
 
     /**
