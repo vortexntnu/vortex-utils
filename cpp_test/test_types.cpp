@@ -87,6 +87,31 @@ TEST_F(TypesTests, test_eta_quat) {
         1e-12));
 }
 
+TEST_F(TypesTests, test_pose_from_eigen) {
+    using vortex::utils::types::Pose;
+
+    Eigen::Vector3d pos(1.0, -2.0, 3.5);
+
+    // Deliberately NOT normalized
+    Eigen::Quaterniond ori(2.0, -1.0, 0.5, 0.25);
+
+    Pose pose = Pose::from_eigen(pos, ori);
+
+    // --- Position mapping ---
+    EXPECT_DOUBLE_EQ(pose.x, pos.x());
+    EXPECT_DOUBLE_EQ(pose.y, pos.y());
+    EXPECT_DOUBLE_EQ(pose.z, pos.z());
+
+    // --- Orientation normalization ---
+    Eigen::Quaterniond expected_q = ori.normalized();
+    Eigen::Quaterniond result_q(pose.qw, pose.qx, pose.qy, pose.qz);
+
+    EXPECT_TRUE(result_q.isApprox(expected_q, 1e-12));
+
+    // --- Quaternion must be unit length ---
+    EXPECT_NEAR(result_q.norm(), 1.0, 1e-12);
+}
+
 TEST_F(TypesTests, test_nu) {
     vortex::utils::types::Twist nu;
     // Test correct zero initialization
