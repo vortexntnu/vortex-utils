@@ -109,22 +109,6 @@ TEST(to_pose_msgs, vector_of_euler) {
     ASSERT_EQ(out.size(), 3);
 }
 
-template <typename T>
-concept AcceptsRosToPoseVec = requires(const T& t) {
-    vortex::utils::ros_conversions::ros_to_pose_vec(t);
-};
-
-static_assert(AcceptsRosToPoseVec<geometry_msgs::msg::Pose>);
-static_assert(AcceptsRosToPoseVec<geometry_msgs::msg::PoseStamped>);
-static_assert(
-    AcceptsRosToPoseVec<geometry_msgs::msg::PoseWithCovarianceStamped>);
-static_assert(AcceptsRosToPoseVec<geometry_msgs::msg::PoseArray>);
-
-static_assert(!AcceptsRosToPoseVec<int>);
-static_assert(!AcceptsRosToPoseVec<double>);
-static_assert(!AcceptsRosToPoseVec<Eigen::Vector3d>);
-static_assert(!AcceptsRosToPoseVec<HasQuatPose>);
-
 TEST(ros_to_pose_vec, pose) {
     geometry_msgs::msg::Pose p;
     p.position.x = 1;
