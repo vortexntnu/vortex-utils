@@ -14,47 +14,15 @@
 #include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
+#include <tf2/exceptions.h>
+#include <tf2/time.h>
+#include <tf2_ros/buffer.h>
+
 #include "concepts.hpp"
 #include "math.hpp"
 #include "types.hpp"
 
 namespace vortex::utils::ros_conversions {
-
-/**
- * @brief Helper concept to check if two types are the same
- *        after removing cv-ref qualifiers.
- *
- * @tparam T First type.
- * @tparam U Second type.
- */
-template <typename T, typename U>
-concept same_bare_as = std::same_as<std::remove_cvref_t<T>, U>;
-
-/**
- * @brief Concept describing ROS pose message types supported by
- * ros_to_eigen6d().
- *
- * Supported types are:
- *
- *  - `geometry_msgs::msg::Pose`
- *
- *  - `geometry_msgs::msg::PoseStamped`
- *
- *  - `geometry_msgs::msg::PoseWithCovariance`
- *
- *  - `geometry_msgs::msg::PoseWithCovarianceStamped`
- *
- *  - `geometry_msgs::msg::PoseArray`
- *
- * @tparam T  The candidate type to test.
- */
-template <typename T>
-concept ROSPoseLike =
-    same_bare_as<T, geometry_msgs::msg::Pose> ||
-    same_bare_as<T, geometry_msgs::msg::PoseStamped> ||
-    same_bare_as<T, geometry_msgs::msg::PoseWithCovariance> ||
-    same_bare_as<T, geometry_msgs::msg::PoseWithCovarianceStamped> ||
-    same_bare_as<T, geometry_msgs::msg::PoseArray>;
 
 /**
  * @brief Converts a PoseLike object to a ROS geometry_msgs::msg::Pose.
@@ -136,49 +104,63 @@ inline vortex::utils::types::Pose ros_pose_to_pose(
 }
 
 /**
- * @brief Extracts one or more internal Pose objects from a ROS pose message.
- *
- * Supported input types are:
- *
- *  - `geometry_msgs::msg::Pose`
- *
- *  - `geometry_msgs::msg::PoseStamped`
- *
- *  - `geometry_msgs::msg::PoseWithCovariance`
- *
- *  - `geometry_msgs::msg::PoseWithCovarianceStamped`
- *
- *  - `geometry_msgs::msg::PoseArray`
- *
- * Messages containing a single pose produce a vector with one element.
- * PoseArray messages produce a vector with one element per pose.
- *
- * @tparam T ROS message type satisfying ROSPoseLike
- * @param msg ROS pose message
- * @return std::vector<vortex::utils::types::Pose> Extracted internal poses
+ * @brief Converts a ROS geometry_msgs::msg::Pose to an internal Pose vector
+ * type.
+ * @param pose geometry_msgs::msg::Pose
+ * @return std::vector<vortex::utils::types::Pose> Internal pose representation
  */
-template <ROSPoseLike T>
-std::vector<vortex::utils::types::Pose> ros_to_pose_vec(const T& msg) {
-    if constexpr (same_bare_as<T, geometry_msgs::msg::Pose>) {
-        return {ros_pose_to_pose(msg)};
-    } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseStamped>) {
-        return {ros_pose_to_pose(msg.pose)};
-    } else if constexpr (same_bare_as<T,
-                                      geometry_msgs::msg::PoseWithCovariance>) {
-        return {ros_pose_to_pose(msg.pose)};
-    } else if constexpr (same_bare_as<
-                             T,
-                             geometry_msgs::msg::PoseWithCovarianceStamped>) {
-        return {ros_pose_to_pose(msg.pose.pose)};
-    } else if constexpr (same_bare_as<T, geometry_msgs::msg::PoseArray>) {
-        std::vector<vortex::utils::types::Pose> poses;
-        poses.reserve(msg.poses.size());
+inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
+    const geometry_msgs::msg::Pose& msg) {
+    return {ros_pose_to_pose(msg)};
+}
 
-        for (const auto& pose : msg.poses) {
-            poses.push_back(ros_pose_to_pose(pose));
-        }
-        return poses;
+/**
+ * @brief Converts a ROS geometry_msgs::msg::PoseStamped to an internal Pose
+ * vector type.
+ * @param pose geometry_msgs::msg::PoseStamped
+ * @return std::vector<vortex::utils::types::Pose> Internal pose representation
+ */
+inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
+    const geometry_msgs::msg::PoseStamped& msg) {
+    return {ros_pose_to_pose(msg.pose)};
+}
+
+/**
+ * @brief Converts a ROS geometry_msgs::msg::PoseWithCovariance to an internal
+ * Pose vector type.
+ * @param pose geometry_msgs::msg::PoseWithCovariance
+ * @return std::vector<vortex::utils::types::Pose> Internal pose representation
+ */
+inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
+    const geometry_msgs::msg::PoseWithCovariance& msg) {
+    return {ros_pose_to_pose(msg.pose)};
+}
+
+/**
+ * @brief Converts a ROS geometry_msgs::msg::PoseWithCovarianceStamped to an
+ * internal Pose vector type.
+ * @param pose geometry_msgs::msg::PoseWithCovarianceStamped
+ * @return std::vector<vortex::utils::types::Pose> Internal pose representation
+ */
+inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
+    const geometry_msgs::msg::PoseWithCovarianceStamped& msg) {
+    return {ros_pose_to_pose(msg.pose.pose)};
+}
+
+/**
+ * @brief Converts a ROS geometry_msgs::msg::PoseArray to an internal Pose
+ * vector type.
+ * @param pose geometry_msgs::msg::PoseArray
+ * @return std::vector<vortex::utils::types::Pose> Internal pose representation
+ */
+inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
+    const geometry_msgs::msg::PoseArray& msg) {
+    std::vector<vortex::utils::types::Pose> poses;
+    poses.reserve(msg.poses.size());
+    for (const auto& pose : msg.poses) {
+        poses.push_back(ros_pose_to_pose(pose));
     }
+    return poses;
 }
 
 }  // namespace vortex::utils::ros_conversions
