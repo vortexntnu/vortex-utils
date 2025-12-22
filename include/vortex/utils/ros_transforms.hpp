@@ -24,25 +24,16 @@ namespace vortex::utils::ros_transforms {
  * @param in Input PoseStamped message
  * @param target_frame Target frame ID
  * @param out Output PoseStamped message in the target frame
- * @param logger ROS logger used for warning output
- * @param timeout Maximum duration to wait for a valid transform
- * @return true if the transform succeeded, false otherwise
+ * @param timeout Maximum duration to wait for a valid transform, defaults to 0
+ * @note This function throws tf2::TransformException on failure.
+ *       Callers are expected to handle errors via try/catch.
  */
-inline bool transform_pose(tf2_ros::Buffer& tf_buffer,
+inline void transform_pose(tf2_ros::Buffer& tf_buffer,
                            const geometry_msgs::msg::PoseStamped& in,
                            const std::string& target_frame,
                            geometry_msgs::msg::PoseStamped& out,
-                           rclcpp::Logger logger,
                            tf2::Duration timeout = tf2::durationFromSec(0.00)) {
-    try {
-        tf_buffer.transform(in, out, target_frame, timeout);
-        return true;
-    } catch (const tf2::TransformException& ex) {
-        RCLCPP_WARN(logger, "TF transform failed from '%s' to '%s': %s",
-                    in.header.frame_id.c_str(), target_frame.c_str(),
-                    ex.what());
-        return false;
-    }
+    tf_buffer.transform(in, out, target_frame, timeout);
 }
 
 /**
@@ -59,26 +50,17 @@ inline bool transform_pose(tf2_ros::Buffer& tf_buffer,
  * @param in Input PoseWithCovarianceStamped message
  * @param target_frame Target frame ID
  * @param out Output PoseWithCovarianceStamped message in the target frame
- * @param logger ROS logger used for warning output
  * @param timeout Maximum duration to wait for a valid transform
- * @return true if the transform succeeded, false otherwise
+ * @note This function throws tf2::TransformException on failure.
+ *       Callers are expected to handle errors via try/catch.
  */
-inline bool transform_pose(
+inline void transform_pose(
     tf2_ros::Buffer& tf_buffer,
     const geometry_msgs::msg::PoseWithCovarianceStamped& in,
     const std::string& target_frame,
     geometry_msgs::msg::PoseWithCovarianceStamped& out,
-    rclcpp::Logger logger,
     tf2::Duration timeout = tf2::durationFromSec(0.00)) {
-    try {
-        tf_buffer.transform(in, out, target_frame, timeout);
-        return true;
-    } catch (const tf2::TransformException& ex) {
-        RCLCPP_WARN(logger, "TF transform failed from '%s' to '%s': %s",
-                    in.header.frame_id.c_str(), target_frame.c_str(),
-                    ex.what());
-        return false;
-    }
+    tf_buffer.transform(in, out, target_frame, timeout);
 }
 
 /**
@@ -95,15 +77,14 @@ inline bool transform_pose(
  * @param in Input PoseArray message
  * @param target_frame Target frame ID
  * @param out Output PoseArray message in the target frame
- * @param logger ROS logger used for warning output
  * @param timeout Maximum duration to wait for each pose transform
- * @return true if all poses were successfully transformed, false otherwise
+ * @note This function throws tf2::TransformException on failure.
+ *       Callers are expected to handle errors via try/catch.
  */
-inline bool transform_pose(tf2_ros::Buffer& tf_buffer,
+inline void transform_pose(tf2_ros::Buffer& tf_buffer,
                            const geometry_msgs::msg::PoseArray& in,
                            const std::string& target_frame,
                            geometry_msgs::msg::PoseArray& out,
-                           rclcpp::Logger logger,
                            tf2::Duration timeout = tf2::durationFromSec(0.0)) {
     out.poses.clear();
     out.poses.reserve(in.poses.size());
@@ -117,19 +98,9 @@ inline bool transform_pose(tf2_ros::Buffer& tf_buffer,
     for (const auto& pose : in.poses) {
         in_ps.pose = pose;
 
-        try {
-            tf_buffer.transform(in_ps, out_ps, target_frame, timeout);
-            out.poses.push_back(out_ps.pose);
-        } catch (const tf2::TransformException& ex) {
-            RCLCPP_WARN(logger,
-                        "TF transform failed for PoseArray element "
-                        "from '%s' to '%s': %s",
-                        in.header.frame_id.c_str(), target_frame.c_str(),
-                        ex.what());
-            return false;
-        }
+        tf_buffer.transform(in_ps, out_ps, target_frame, timeout);
+        out.poses.push_back(out_ps.pose);
     }
-    return true;
 }
 
 }  // namespace vortex::utils::ros_transforms
