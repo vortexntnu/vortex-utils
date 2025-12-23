@@ -12,7 +12,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "vortex/utils/ros_transforms.hpp"
+#include "vortex/utils/ros/ros_transforms.hpp"
 
 class RosTransformsTest : public ::testing::Test {
    protected:
