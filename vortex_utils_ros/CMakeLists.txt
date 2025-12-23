@@ -37,7 +37,7 @@ install(
 
 ament_export_targets(vortex_utils_ros_targets)
 
-ament_export_dependencies()
+ament_export_dependencies(vortex_utils)
 ament_export_include_directories(include)
 ament_python_install_package(${PROJECT_NAME})
 
