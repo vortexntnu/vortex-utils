@@ -14,9 +14,9 @@
 #include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
-#include "concepts.hpp"
-#include "math.hpp"
-#include "types.hpp"
+#include <vortex/utils/concepts.hpp>
+#include <vortex/utils/math.hpp>
+#include <vortex/utils/types.hpp>
 
 namespace vortex::utils::ros_conversions {
 

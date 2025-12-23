@@ -8,9 +8,9 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
-#include "vortex/utils/math.hpp"
-#include "vortex/utils/ros_conversions.hpp"
-#include "vortex/utils/types.hpp"
+#include <vortex/utils/math.hpp>
+#include <vortex/utils/types.hpp>
+#include "vortex/utils/ros/ros_conversions.hpp"
 
 struct HasEulerPose {
     double x = 0, y = 0, z = 0;
