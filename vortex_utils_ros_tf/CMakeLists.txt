@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 find_package(ament_cmake REQUIRED)
-find_package(vortex_utils REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -21,7 +20,6 @@ target_include_directories(vortex_utils_ros_tf INTERFACE
 )
 
 ament_target_dependencies(vortex_utils_ros_tf INTERFACE
-  vortex_utils
   rclcpp
   tf2
   tf2_ros
