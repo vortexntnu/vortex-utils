@@ -10,6 +10,7 @@ find_package(rclcpp REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(vortex_msgs REQUIRED)
 
 add_library(vortex_utils_ros INTERFACE)
 
@@ -23,6 +24,7 @@ ament_target_dependencies(vortex_utils_ros INTERFACE
   rclcpp
   Eigen3
   geometry_msgs
+  vortex_msgs
 )
 
 install(

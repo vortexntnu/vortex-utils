@@ -16,6 +16,7 @@
   <depend>python3-numpy</depend>
   <depend>python3-scipy</depend>
   <depend>geometry_msgs</depend>
+  <depend>vortex_msgs</depend>
 
 
   <test_depend>ament_cmake_pytest</test_depend>

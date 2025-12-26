@@ -7,6 +7,7 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <vortex_msgs/msg/landmark_array.hpp>
 
 #include <vortex/utils/math.hpp>
 #include <vortex/utils/types.hpp>
@@ -207,6 +208,20 @@ TEST(ros_to_pose_vec, pose_array) {
 
     arr.poses[0].position.x = 1;
     arr.poses[1].position.x = 2;
+
+    auto v = vortex::utils::ros_conversions::ros_to_pose_vec(arr);
+
+    ASSERT_EQ(v.size(), 2);
+    EXPECT_NEAR(v[0].x, 1.0, 1e-6);
+    EXPECT_NEAR(v[1].x, 2.0, 1e-6);
+}
+
+TEST(ros_to_pose_vec, landmark_array) {
+    vortex_msgs::msg::LandmarkArray arr;
+    arr.landmarks.resize(2);
+
+    arr.landmarks[0].pose.pose.position.x = 1;
+    arr.landmarks[1].pose.pose.position.x = 2;
 
     auto v = vortex::utils::ros_conversions::ros_to_pose_vec(arr);
 

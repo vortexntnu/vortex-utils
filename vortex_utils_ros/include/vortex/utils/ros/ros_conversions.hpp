@@ -13,6 +13,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <vortex_msgs/msg/landmark_array.hpp>
 
 #include <vortex/utils/concepts.hpp>
 #include <vortex/utils/math.hpp>
@@ -155,6 +156,22 @@ inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
     poses.reserve(msg.poses.size());
     for (const auto& pose : msg.poses) {
         poses.push_back(ros_pose_to_pose(pose));
+    }
+    return poses;
+}
+
+/**
+ * @brief Converts a ROS vortex_msgs::msg::LandmarkArray to an internal Pose
+ * vector type.
+ * @param pose vortex_msgs::msg::LandmarkArray
+ * @return std::vector<vortex::utils::types::Pose> Internal pose representation
+ */
+inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
+    const vortex_msgs::msg::LandmarkArray& msg) {
+    std::vector<vortex::utils::types::Pose> poses;
+    poses.reserve(msg.landmarks.size());
+    for (const auto& landmark : msg.landmarks) {
+        poses.push_back(ros_pose_to_pose(landmark.pose.pose));
     }
     return poses;
 }
