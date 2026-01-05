@@ -1,6 +1,5 @@
 import pytest
 from geometry_msgs.msg import Pose, Twist
-
 from vortex_utils.python_utils import quat_to_euler
 from vortex_utils_ros.ros_converter import pose_from_ros, twist_from_ros
 
