@@ -245,6 +245,50 @@ struct Pose {
      * @return PoseEuler
      */
     PoseEuler as_pose_euler() const;
+
+    /**
+     * @brief Convert from ENU to NED coordinate frame.
+     * @return Pose in NED frame.
+     */
+    Pose enu_to_ned() const {
+        Eigen::Matrix3d R;
+        R << 0, 1, 0, 1, 0, 0, 0, 0, -1;
+
+        Eigen::Quaterniond q_enu(qw, qx, qy, qz);
+        Eigen::Quaterniond q_ned = Eigen::Quaterniond(R) * q_enu.normalized();
+
+        return Pose{
+            .x = y,
+            .y = x,
+            .z = -z,
+            .qw = q_ned.w(),
+            .qx = q_ned.x(),
+            .qy = q_ned.y(),
+            .qz = q_ned.z(),
+        };
+    }
+
+    /**
+     * @brief Convert from NED to ENU coordinate frame.
+     * @return Pose in ENU frame.
+     */
+    Pose ned_to_enu() const {
+        Eigen::Matrix3d R;
+        R << 0, 1, 0, 1, 0, 0, 0, 0, -1;
+
+        Eigen::Quaterniond q_ned(qw, qx, qy, qz);
+        Eigen::Quaterniond q_enu = Eigen::Quaterniond(R) * q_ned.normalized();
+
+        return Pose{
+            .x = y,
+            .y = x,
+            .z = -z,
+            .qw = q_enu.w(),
+            .qx = q_enu.x(),
+            .qy = q_enu.y(),
+            .qz = q_enu.z(),
+        };
+    }
 };
 
 /**

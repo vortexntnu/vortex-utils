@@ -87,6 +87,42 @@ TEST_F(TypesTests, test_pose_quat) {
         1e-12));
 }
 
+TEST_F(TypesTests, position_transform) {
+    using vortex::utils::types::Pose;
+    Pose p{.x = 1.0,
+           .y = 2.0,
+           .z = 3.0,
+           .qw = 1.0,
+           .qx = 0.0,
+           .qy = 0.0,
+           .qz = 0.0};
+
+    Pose ned = p.enu_to_ned();
+
+    EXPECT_DOUBLE_EQ(ned.x, 2.0);
+    EXPECT_DOUBLE_EQ(ned.y, 1.0);
+    EXPECT_DOUBLE_EQ(ned.z, -3.0);
+}
+
+TEST_F(TypesTests, orientation_round_trip) {
+    using vortex::utils::types::Pose;
+    Eigen::AngleAxisd aa(M_PI / 3.0,
+                         Eigen::Vector3d(0.3, 0.5, 0.8).normalized());
+    Eigen::Quaterniond q(aa);
+
+    Pose p{.x = 0.0,
+           .y = 0.0,
+           .z = 0.0,
+           .qw = q.w(),
+           .qx = q.x(),
+           .qy = q.y(),
+           .qz = q.z()};
+
+    Pose p2 = p.enu_to_ned().ned_to_enu();
+
+    EXPECT_TRUE(p2.ori_quaternion().isApprox(p.ori_quaternion(), 1e-12));
+}
+
 TEST_F(TypesTests, test_pose_from_eigen) {
     using vortex::utils::types::Pose;
 
