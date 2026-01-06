@@ -135,7 +135,8 @@ inline void transform_pose(tf2_ros::Buffer& tf_buffer,
     for (const auto& lm : in.landmarks) {
         vortex_msgs::msg::Landmark lm_out = lm;
 
-        geometry_msgs::msg::PoseWithCovarianceStamped in_ps, out_ps;
+        geometry_msgs::msg::PoseWithCovarianceStamped in_ps;
+        geometry_msgs::msg::PoseWithCovarianceStamped out_ps;
         in_ps.header = in.header;
         in_ps.pose = lm.pose;
 
