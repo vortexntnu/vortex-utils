@@ -184,6 +184,28 @@ struct Pose {
     }
 
     /**
+     * @brief Set the position from an Eigen::Vector3d.
+     * @param pos Eigen::Vector3d
+     */
+    void set_pos(const Eigen::Vector3d& pos) {
+        x = pos.x();
+        y = pos.y();
+        z = pos.z();
+    }
+
+    /**
+     * @brief Set the orientation from an Eigen::Quaterniond.
+     * @param ori Eigen::Quaterniond
+     */
+    void set_ori(const Eigen::Quaterniond& ori) {
+        Eigen::Quaterniond q = ori.normalized();
+        qw = q.w();
+        qx = q.x();
+        qy = q.y();
+        qz = q.z();
+    }
+
+    /**
      * @brief Convert to Eigen::Vector7d
      * @return Eigen::Vector7d{x, y, z, qw, qx, qy, qz}
      */
