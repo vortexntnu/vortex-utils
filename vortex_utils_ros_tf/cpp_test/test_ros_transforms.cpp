@@ -6,6 +6,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <vortex_msgs/msg/landmark_array.hpp>
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/static_transform_broadcaster.h>
@@ -140,6 +141,39 @@ TEST_F(RosTransformsTest, pose_array_failure) {
                                                           "target", out);
         },
         tf2::TransformException);
+}
+
+TEST_F(RosTransformsTest, landmark_array_failure) {
+    vortex_msgs::msg::LandmarkArray in, out;
+    in.header.frame_id = "unknown_frame";
+    in.header.stamp = node_->get_clock()->now();
+    in.landmarks.resize(1);
+
+    EXPECT_THROW(
+        {
+            vortex::utils::ros_transforms::transform_pose(*buffer_, in,
+                                                          "target", out);
+        },
+        tf2::TransformException);
+}
+
+TEST_F(RosTransformsTest, landmark_array_success) {
+    vortex_msgs::msg::LandmarkArray in, out;
+    in.header.frame_id = "source";
+    in.header.stamp = node_->get_clock()->now();
+
+    in.landmarks.resize(2);
+    in.landmarks[0].pose.pose.position.x = 0.0;
+    in.landmarks[1].pose.pose.position.x = 1.0;
+
+    EXPECT_NO_THROW({
+        vortex::utils::ros_transforms::transform_pose(*buffer_, in, "target",
+                                                      out);
+    });
+
+    ASSERT_EQ(out.landmarks.size(), 2);
+    EXPECT_NEAR(out.landmarks[0].pose.pose.position.x, -1.0, 1e-6);
+    EXPECT_NEAR(out.landmarks[1].pose.pose.position.x, 0.0, 1e-6);
 }
 
 int main(int argc, char** argv) {

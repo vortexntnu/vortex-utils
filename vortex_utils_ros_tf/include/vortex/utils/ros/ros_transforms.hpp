@@ -4,6 +4,7 @@
 #include <geometry_msgs/msg/pose_array.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <vortex_msgs/msg/landmark_array.hpp>
 
 #include <tf2/exceptions.h>
 #include <tf2/time.h>
@@ -100,6 +101,49 @@ inline void transform_pose(tf2_ros::Buffer& tf_buffer,
 
         tf_buffer.transform(in_ps, out_ps, target_frame, timeout);
         out.poses.push_back(out_ps.pose);
+    }
+}
+
+/**
+ * @brief Transform all poses in a LandmarkArray into a target frame using TF.
+ *
+ * Each pose in the input LandmarkArray is individually transformed using the
+ * array header (frame ID and timestamp). The output LandmarkArray contains
+ * only successfully transformed poses and is expressed in the target frame.
+ *
+ * TF does not natively support PoseArray, so each pose is internally
+ * wrapped as a PoseStamped for transformation.
+ *
+ * @param tf_buffer TF buffer used for transform lookup
+ * @param in Input PoseArray message
+ * @param target_frame Target frame ID
+ * @param out Output PoseArray message in the target frame
+ * @param timeout Maximum duration to wait for each pose transform
+ * @note This function throws tf2::TransformException on failure.
+ *       Callers are expected to handle errors via try/catch.
+ */
+inline void transform_pose(tf2_ros::Buffer& tf_buffer,
+                           const vortex_msgs::msg::LandmarkArray& in,
+                           const std::string& target_frame,
+                           vortex_msgs::msg::LandmarkArray& out,
+                           tf2::Duration timeout = tf2::durationFromSec(0.0)) {
+    out.header.stamp = in.header.stamp;
+    out.header.frame_id = target_frame;
+    out.landmarks.clear();
+    out.landmarks.reserve(in.landmarks.size());
+
+    for (const auto& lm : in.landmarks) {
+        vortex_msgs::msg::Landmark lm_out = lm;
+
+        geometry_msgs::msg::PoseWithCovarianceStamped in_ps;
+        geometry_msgs::msg::PoseWithCovarianceStamped out_ps;
+        in_ps.header = in.header;
+        in_ps.pose = lm.pose;
+
+        tf_buffer.transform(in_ps, out_ps, target_frame, timeout);
+
+        lm_out.pose = out_ps.pose;
+        out.landmarks.push_back(lm_out);
     }
 }
 
