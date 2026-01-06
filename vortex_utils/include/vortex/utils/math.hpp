@@ -158,6 +158,13 @@ Eigen::VectorXd anti_windup(const double dt,
 Eigen::Quaterniond average_quaternions(
     const std::vector<Eigen::Quaterniond>& quaternions);
 
+/**
+ * @brief Convert a quaternion between ENU and NED frames. Works both ways.
+ * @param quat Eigen::Quaterniond
+ * @return Eigen::Quaterniond
+ */
+Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat);
+
 }  // namespace vortex::utils::math
 
 #endif  // VORTEX_UTILS_MATH_HPP

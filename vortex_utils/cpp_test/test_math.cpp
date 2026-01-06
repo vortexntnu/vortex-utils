@@ -431,4 +431,32 @@ TEST(average_quaternions, test_degeneracy) {
     EXPECT_THROW(average_quaternions({q0, q180}), std::runtime_error);
 }
 
+TEST(enu_ned_rotation, explicit_matrix_values) {
+    Eigen::Quaterniond q_enu = euler_to_quat(0, 0, M_PI / 2);
+    Eigen::Quaterniond q_ned = enu_ned_rotation(q_enu);
+
+    Eigen::Matrix3d R_frame;
+    R_frame << 0, 1, 0, 1, 0, 0, 0, 0, -1;
+
+    Eigen::Matrix3d R_expected = R_frame * q_enu.toRotationMatrix();
+    Eigen::Matrix3d R_actual = q_ned.toRotationMatrix();
+
+    EXPECT_TRUE(R_actual.isApprox(R_expected, 1e-12));
+}
+
+TEST(enu_ned_rotation, test_symmetry) {
+    Eigen::Quaterniond q_enu = Eigen::Quaterniond(
+        Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d::UnitZ()));
+
+    Eigen::Quaterniond q_ned = enu_ned_rotation(q_enu);
+    Eigen::Quaterniond q_enu_converted_back = enu_ned_rotation(q_ned);
+
+    EXPECT_TRUE(q_enu.isApprox(q_enu_converted_back, 1e-12) ||
+                q_enu.isApprox(Eigen::Quaterniond(-q_enu_converted_back.w(),
+                                                  -q_enu_converted_back.x(),
+                                                  -q_enu_converted_back.y(),
+                                                  -q_enu_converted_back.z()),
+                               1e-12));
+}
+
 }  // namespace vortex::utils::math

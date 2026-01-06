@@ -174,4 +174,12 @@ Eigen::Quaterniond average_quaternions(
     return avg_q.normalized();
 }
 
+Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat) {
+    Eigen::Matrix3d R;
+    R << 0, 1, 0, 1, 0, 0, 0, 0, -1;
+
+    Eigen::Quaterniond q_out = Eigen::Quaterniond(R) * quat.normalized();
+    return q_out.normalized();
+}
+
 }  // namespace vortex::utils::math

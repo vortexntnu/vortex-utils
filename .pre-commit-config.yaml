@@ -79,7 +79,7 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        args: ['--write-changes', '--ignore-words-list=theses']
+        args: ['--write-changes', '--ignore-words-list=theses,ned']
 # For more information on pre-commit.ci and its configuration, visit:
 # https://pre-commit.ci/
 ci:
