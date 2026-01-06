@@ -120,7 +120,13 @@ TEST_F(TypesTests, orientation_round_trip) {
 
     Pose p2 = p.enu_to_ned().ned_to_enu();
 
-    EXPECT_TRUE(p2.ori_quaternion().isApprox(p.ori_quaternion(), 1e-12));
+    Eigen::Quaterniond q1 = p.ori_quaternion();
+    Eigen::Quaterniond q2 = p2.ori_quaternion();
+
+    EXPECT_TRUE(
+        q1.isApprox(q2, 1e-12) ||
+        q1.isApprox(Eigen::Quaterniond(-q2.w(), -q2.x(), -q2.y(), -q2.z()),
+                    1e-12));
 }
 
 TEST_F(TypesTests, test_pose_from_eigen) {
