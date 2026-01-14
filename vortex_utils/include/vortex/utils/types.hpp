@@ -3,6 +3,7 @@
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+#include <format>
 #include "math.hpp"
 
 namespace vortex::utils::types {
@@ -327,6 +328,49 @@ inline PoseEuler Pose::as_pose_euler() const {
                   .yaw = euler_angles(2)};
     return eta;
 }
+struct CameraMatrixK {
+    double fx{};
+    double fy{};
+    double cx{};
+    double cy{};
+    double skew{0.0};
+
+    void validate_focals() const {
+        if (fx <= 0.0 || fy <= 0.0) {
+            throw std::runtime_error(std::format(
+                "Invalid Camera Matrix K. Focals fx and fy must be positive:\n"
+                "fx = {}, fy = {}",
+                fx, fy));
+        }
+    }
+
+    Eigen::Matrix3d K() const {
+        validate_focals();
+        Eigen::Matrix3d k = Eigen::Matrix3d::Identity();
+        k(0, 0) = fx;
+        k(0, 1) = skew;
+        k(0, 2) = cx;
+        k(1, 1) = fy;
+        k(1, 2) = cy;
+
+        return k;
+    }
+
+    Eigen::Matrix3d K_inv() const {
+        validate_focals();
+        Eigen::Matrix3d k_inv = Eigen::Matrix3d::Identity();
+        k_inv(0, 0) = 1.0 / fx;
+        k_inv(1, 1) = 1.0 / fy;
+        k_inv(1, 2) = -cy / fy;
+
+        if (skew != 0.0) {
+            k_inv(0, 1) = -skew / (fx * fy);
+            k_inv(0, 2) = (skew * cy - cx * fy) / (fx * fy);
+        }
+
+        return k_inv;
+    }
+};
 
 }  // namespace vortex::utils::types
 
