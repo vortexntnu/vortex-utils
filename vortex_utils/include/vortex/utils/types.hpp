@@ -383,6 +383,37 @@ struct CameraIntrinsics {
 
         return k_inv;
     }
+
+    /**
+     * @brief Project a 3D point expressed in the camera coordinate frame
+     *        onto the image sensor, producing pixel coordinates.
+     *
+     * This function implements the pinhole camera model by:
+     *  1) applying perspective division (Eq. 2.50 in Szeliski),
+     *  2) mapping normalized image coordinates to pixel coordinates
+     *     using the camera intrinsics (Eq. 2.54 with K defined in Eq. 2.57).
+     *
+     * @param point 3D point in camera coordinates (Xc, Yc, Zc), with Zc > 0.
+     * @return 2D pixel coordinates (u, v).
+     *
+     * @throws std::runtime_error if Zc <= 0.
+     */
+    Eigen::Vector2d project_point(const Eigen::Vector3d& point) const {
+        const double x_c = point.x();
+        const double y_c = point.y();
+        const double z_c = point.z();
+        if (z_c <= 0.0) {
+            throw std::runtime_error(
+                "Projection of point failed. Can't project with z <= 0.");
+        }
+        const double x_norm = x_c / z_c;
+        const double y_norm = y_c / z_c;
+
+        const double u = fx * x_norm + skew * y_norm + cx;
+        const double v = fy * y_norm + cy;
+
+        return {u, v};
+    }
 };
 
 }  // namespace vortex::utils::types
