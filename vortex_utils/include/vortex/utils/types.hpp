@@ -26,6 +26,14 @@ struct Pose;
  */
 struct Twist;
 
+/**
+ * @brief Camera intrinsic parameters for an ideal pinhole (perspective) camera,
+ * following Eq. (2.57) in
+ * Szeliski, R., Computer Vision: Algorithms and Applications,
+ * 2nd ed., Springer, 2022.
+ */
+struct CameraIntrinsics;
+
 struct PoseEuler {
     double x{};
     double y{};
@@ -328,7 +336,7 @@ inline PoseEuler Pose::as_pose_euler() const {
                   .yaw = euler_angles(2)};
     return eta;
 }
-struct CameraMatrixK {
+struct CameraIntrinsics {
     double fx{};
     double fy{};
     double cx{};
@@ -344,6 +352,11 @@ struct CameraMatrixK {
         }
     }
 
+    /**
+     * @brief Get the camera intrinsic matrix K
+     * according to Eq. (2.57) in Szeliski, 2022.
+     * @return Eigen::Matrix3d K
+     */
     Eigen::Matrix3d K() const {
         validate_focals();
         Eigen::Matrix3d k = Eigen::Matrix3d::Identity();
