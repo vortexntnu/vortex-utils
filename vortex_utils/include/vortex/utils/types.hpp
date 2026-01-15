@@ -336,6 +336,7 @@ inline PoseEuler Pose::as_pose_euler() const {
                   .yaw = euler_angles(2)};
     return eta;
 }
+
 struct CameraIntrinsics {
     double fx{};
     double fy{};
@@ -369,6 +370,10 @@ struct CameraIntrinsics {
         return k;
     }
 
+    /**
+     * @brief Get the inverse camera intrinsic matrix K
+     * @return Eigen::Matrix3d K_inv
+     */
     Eigen::Matrix3d K_inv() const {
         validate_focals();
         Eigen::Matrix3d k_inv = Eigen::Matrix3d::Identity();
@@ -415,6 +420,33 @@ struct CameraIntrinsics {
         const double v = fy * y_norm + cy;
 
         return {u, v};
+    }
+
+    /**
+     * @brief Backproject a pixel using the inverse intrinsics matrix to produce
+     * a ray through the pixel. The ray is in normalized image coordinates with
+     * z = 1.0 and is not necessarily normalized.
+     * @return ray in camera space (x, y, 1.0).
+     */
+    Eigen::Vector3d backproject_ray(const Eigen::Vector2d& pixel) const {
+        const double u = pixel(0);
+        const double v = pixel(1);
+
+        const double x =
+            u / fx - v * skew / (fx * fy) + (skew * cy - cx * fy) / (fx * fy);
+        const double y = v / fy - cy / fy;
+
+        return {x, y, 1.0};
+    }
+
+    /**
+     * @brief Backproject a pixel using the inverse intrinsics matrix and a
+     * depth value to compute the corresponding 3D point.
+     * @return 3D point in camera space
+     */
+    Eigen::Vector3d backproject_point(const Eigen::Vector2d& pixel,
+                                      double depth) const {
+        return depth * backproject_ray(pixel);
     }
 };
 

@@ -237,3 +237,56 @@ TEST_F(TypesTests, test_project_throws_on_nonpositive_z) {
 
     EXPECT_THROW(intr.project_point(point), std::runtime_error);
 }
+
+TEST_F(TypesTests, test_backproject_ray_matches_K_inv) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 400.0, .cx = 150.0, .cy = 200.0, .skew = 10.0};
+
+    Eigen::Vector2d pixel(350.0, 260.0);
+
+    Eigen::Vector3d ray = intr.backproject_ray(pixel);
+
+    Eigen::Vector3d expected =
+        intr.K_inv() * Eigen::Vector3d(pixel.x(), pixel.y(), 1.0);
+
+    EXPECT_TRUE(ray.isApprox(expected, 1e-12));
+}
+
+TEST_F(TypesTests, test_backproject_point_scales_ray) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 250.0, .fy = 300.0, .cx = 100.0, .cy = 120.0, .skew = 5.0};
+
+    Eigen::Vector2d pixel(200.0, 180.0);
+    const double depth = 4.0;
+
+    Eigen::Vector3d point = intr.backproject_point(pixel, depth);
+    Eigen::Vector3d ray = intr.backproject_ray(pixel);
+
+    EXPECT_TRUE(point.isApprox(depth * ray, 1e-12));
+}
+
+TEST_F(TypesTests, test_project_backproject_roundtrip) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 350.0, .cx = 160.0, .cy = 120.0, .skew = 20.0};
+
+    Eigen::Vector3d X_cam(1.5, -0.5, 4.0);
+
+    Eigen::Vector2d pixel = intr.project_point(X_cam);
+    Eigen::Vector3d X_recon = intr.backproject_point(pixel, X_cam.z());
+
+    EXPECT_TRUE(X_cam.isApprox(X_recon, 1e-12));
+}
+
+TEST_F(TypesTests, test_backproject_ray_direction_consistency) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 300.0, .cx = 150.0, .cy = 150.0, .skew = 0.0};
+
+    Eigen::Vector2d pixel(200.0, 180.0);
+
+    Eigen::Vector3d ray = intr.backproject_ray(pixel);
+    Eigen::Vector3d p1 = intr.backproject_point(pixel, 2.0);
+    Eigen::Vector3d p2 = intr.backproject_point(pixel, 5.0);
+
+    EXPECT_TRUE(ray.normalized().isApprox(p1.normalized(), 1e-12));
+    EXPECT_TRUE(ray.normalized().isApprox(p2.normalized(), 1e-12));
+}
