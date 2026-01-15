@@ -143,3 +143,97 @@ TEST_F(TypesTests, test_twist) {
     EXPECT_NEAR(diff.q, 0.3, 1e-12);
     EXPECT_NEAR(diff.r, 1.4, 1e-12);
 }
+
+TEST_F(TypesTests, test_default_focals_throw) {
+    vortex::utils::types::CameraIntrinsics intr;
+
+    EXPECT_THROW(intr.K(), std::runtime_error);
+}
+
+TEST_F(TypesTests, test_negative_focals_throw) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = -1.0, .fy = -1.0, .cx = 100, .cy = 100, .skew = 0.0};
+
+    EXPECT_THROW(intr.K(), std::runtime_error);
+}
+
+TEST_F(TypesTests, test_camera_intrinsics_K_no_skew) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 400.0, .cx = 150.0, .cy = 200.0, .skew = 0.0};
+
+    Eigen::Matrix3d K = intr.K();
+
+    Eigen::Matrix3d expected;
+    expected << 300.0, 0.0, 150.0, 0.0, 400.0, 200.0, 0.0, 0.0, 1.0;
+
+    EXPECT_TRUE(K.isApprox(expected, 1e-12));
+}
+
+TEST_F(TypesTests, test_camera_intrinsics_K_with_skew) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 400.0, .cx = 150.0, .cy = 200.0, .skew = 10.0};
+
+    Eigen::Matrix3d K = intr.K();
+
+    Eigen::Matrix3d expected;
+    expected << 300.0, 10.0, 150.0, 0.0, 400.0, 200.0, 0.0, 0.0, 1.0;
+
+    EXPECT_TRUE(K.isApprox(expected, 1e-12));
+}
+
+TEST_F(TypesTests, test_camera_intrinsics_K_inv_no_skew) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 200.0, .fy = 400.0, .cx = 100.0, .cy = 50.0, .skew = 0.0};
+
+    Eigen::Matrix3d K_inv = intr.K_inv();
+
+    Eigen::Matrix3d expected;
+    expected << 1.0 / 200.0, 0.0, -100.0 / 200.0, 0.0, 1.0 / 400.0,
+        -50.0 / 400.0, 0.0, 0.0, 1.0;
+
+    EXPECT_TRUE(K_inv.isApprox(expected, 1e-12));
+}
+
+TEST_F(TypesTests, test_camera_intrinsics_K_times_K_inv_identity) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 200.0, .fy = 400.0, .cx = 100.0, .cy = 50.0, .skew = 0.0};
+
+    Eigen::Matrix3d I = intr.K() * intr.K_inv();
+    EXPECT_TRUE(I.isApprox(Eigen::Matrix3d::Identity(), 1e-12));
+}
+
+TEST_F(TypesTests, test_project) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 300.0, .cx = 150.0, .cy = 150.0, .skew = 0.0};
+
+    Eigen::Vector3d point(10.0, 10.0, 10.0);
+
+    Eigen::Vector2d pixel = intr.project_point(point);
+
+    EXPECT_NEAR(pixel.x(), 450.0, 1e-12);
+    EXPECT_NEAR(pixel.y(), 450.0, 1e-12);
+}
+
+TEST_F(TypesTests, test_project_with_skew) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 300.0, .cx = 100.0, .cy = 100.0, .skew = 50.0};
+
+    Eigen::Vector3d point(2.0, 1.0, 1.0);
+
+    Eigen::Vector2d pixel = intr.project_point(point);
+
+    const double x_norm = 2.0;
+    const double y_norm = 1.0;
+
+    EXPECT_NEAR(pixel.x(), 300.0 * x_norm + 50.0 * y_norm + 100.0, 1e-12);
+    EXPECT_NEAR(pixel.y(), 300.0 * y_norm + 100.0, 1e-12);
+}
+
+TEST_F(TypesTests, test_project_throws_on_nonpositive_z) {
+    vortex::utils::types::CameraIntrinsics intr{
+        .fx = 300.0, .fy = 300.0, .cx = 150.0, .cy = 150.0, .skew = 0.0};
+
+    Eigen::Vector3d point(1.0, 1.0, 0.0);
+
+    EXPECT_THROW(intr.project_point(point), std::runtime_error);
+}
