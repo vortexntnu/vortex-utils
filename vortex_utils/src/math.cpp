@@ -189,4 +189,22 @@ Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat) {
     return q_out.normalized();
 }
 
+Eigen::Vector2d project_point(const Eigen::Matrix3d& intrinsic_matrix,
+                              const Eigen::Vector3d& point) {
+    Eigen::Vector3d point_norm = point / point.z();
+    return (intrinsic_matrix * point_norm).head(2);
+}
+
+Eigen::Vector3d backproject_ray(const Eigen::Matrix3d& intrinsic_matrix_inv,
+                                const Eigen::Vector2d& pixel) {
+    Eigen::Vector3d pixel_h(pixel.x(), pixel.y(), 1.0);
+    return intrinsic_matrix_inv * pixel_h;
+}
+
+Eigen::Vector3d backproject_point(const Eigen::Matrix3d& intrinsic_matrix_inv,
+                                  const Eigen::Vector2d& pixel,
+                                  double depth) {
+    return backproject_ray(intrinsic_matrix_inv, pixel) * depth;
+}
+
 }  // namespace vortex::utils::math

@@ -459,4 +459,62 @@ TEST(enu_ned_rotation, test_symmetry) {
                                1e-12));
 }
 
+TEST(project_point, test_project_point_basic) {
+    Eigen::Matrix3d K;
+    K << 300.0, 0.0, 150.0, 0.0, 400.0, 200.0, 0.0, 0.0, 1.0;
+
+    Eigen::Vector3d point(2.0, 4.0, 2.0);
+
+    Eigen::Vector2d pixel = project_point(K, point);
+
+    const double x_norm = 2.0 / 2.0;
+    const double y_norm = 4.0 / 2.0;
+
+    EXPECT_NEAR(pixel.x(), 300.0 * x_norm + 150.0, 1e-12);
+    EXPECT_NEAR(pixel.y(), 400.0 * y_norm + 200.0, 1e-12);
+}
+
+TEST(project_point, test_project_point_with_skew) {
+    Eigen::Matrix3d K;
+    K << 300.0, 50.0, 100.0, 0.0, 300.0, 100.0, 0.0, 0.0, 1.0;
+
+    Eigen::Vector3d point(2.0, 1.0, 1.0);
+
+    Eigen::Vector2d pixel = project_point(K, point);
+
+    EXPECT_NEAR(pixel.x(), 300.0 * 2.0 + 50.0 * 1.0 + 100.0, 1e-12);
+    EXPECT_NEAR(pixel.y(), 300.0 * 1.0 + 100.0, 1e-12);
+}
+
+TEST(backproject_ray, test_backproject_ray_explicit_values) {
+    Eigen::Matrix3d K_inv;
+    K_inv << 1.0 / 200.0, -20.0 / (200.0 * 400.0),
+        (20.0 * 50.0 - 100.0 * 400.0) / (200.0 * 400.0), 0.0, 1.0 / 400.0,
+        -50.0 / 400.0, 0.0, 0.0, 1.0;
+
+    Eigen::Vector2d pixel(300.0, 250.0);
+
+    Eigen::Vector3d ray = backproject_ray(K_inv, pixel);
+
+    EXPECT_NEAR(ray.x(), 0.95, 1e-12);
+    EXPECT_NEAR(ray.y(), 0.5, 1e-12);
+    EXPECT_NEAR(ray.z(), 1.0, 1e-12);
+}
+
+TEST(backproject_point, test_backproject_point_explicit_values) {
+    Eigen::Matrix3d K_inv;
+    K_inv << 1.0 / 200.0, -20.0 / (200.0 * 400.0),
+        (20.0 * 50.0 - 100.0 * 400.0) / (200.0 * 400.0), 0.0, 1.0 / 400.0,
+        -50.0 / 400.0, 0.0, 0.0, 1.0;
+
+    Eigen::Vector2d pixel(300.0, 250.0);
+    const double depth = 4.0;
+
+    Eigen::Vector3d point = backproject_point(K_inv, pixel, depth);
+
+    EXPECT_NEAR(point.x(), 3.8, 1e-12);
+    EXPECT_NEAR(point.y(), 2.0, 1e-12);
+    EXPECT_NEAR(point.z(), 4.0, 1e-12);
+}
+
 }  // namespace vortex::utils::math

@@ -426,6 +426,7 @@ struct CameraIntrinsics {
      * @brief Backproject a pixel using the inverse intrinsics matrix to produce
      * a ray through the pixel. The ray is in normalized image coordinates with
      * z = 1.0 and is not necessarily normalized.
+     * @param pixel Eigen::Vector2d representing camera pixel coordinates.
      * @return ray in camera space (x, y, 1.0).
      */
     Eigen::Vector3d backproject_ray(const Eigen::Vector2d& pixel) const {
@@ -442,10 +443,16 @@ struct CameraIntrinsics {
     /**
      * @brief Backproject a pixel using the inverse intrinsics matrix and a
      * depth value to compute the corresponding 3D point.
+     * @param pixel Eigen::Vector2d representing camera pixel coordinates.
+     * @param depth Depth for the corresponding pixel.
      * @return 3D point in camera space
      */
     Eigen::Vector3d backproject_point(const Eigen::Vector2d& pixel,
                                       double depth) const {
+        if (depth <= 0.0) {
+            throw std::runtime_error(
+                "Backprojection failed. Depth must be positive.");
+        }
         return depth * backproject_ray(pixel);
     }
 };

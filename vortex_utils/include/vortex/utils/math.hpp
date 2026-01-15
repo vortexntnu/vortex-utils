@@ -165,6 +165,45 @@ Eigen::Quaterniond average_quaternions(
  */
 Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat);
 
+/**
+ * @brief Project a 3D point expressed in the camera coordinate frame
+ *        onto the image sensor, producing pixel coordinates.
+ *
+ * This function implements the pinhole camera model by:
+ *  1) applying perspective division (Eq. 2.50 in Szeliski),
+ *  2) mapping normalized image coordinates to pixel coordinates
+ *     using the camera intrinsics (Eq. 2.54 with K defined in Eq. 2.57).
+ *
+ * @param intrinsic_matrix Eigen::Matrix3d representing the camera matrix K.
+ * @param point 3D point in camera coordinates (Xc, Yc, Zc), with Zc > 0.
+ * @return 2D pixel coordinates (u, v).
+ */
+Eigen::Vector2d project_point(const Eigen::Matrix3d& intrinsic_matrix,
+                              const Eigen::Vector3d& point);
+/**
+ * @brief Backproject a pixel using the inverse intrinsics matrix to produce
+ * a ray through the pixel. The ray is in normalized image coordinates with
+ * z = 1.0 and is not necessarily normalized.
+ * @param intrinsic_matrix_inv Eigen::Matrix3d representing the inverse camera
+ * matrix K_inv.
+ * @param pixel Eigen::Vector2d representing the pixel to backproject.
+ * @return ray in camera space (x, y, 1.0).
+ */
+Eigen::Vector3d backproject_ray(const Eigen::Matrix3d& intrinsic_matrix_inv,
+                                const Eigen::Vector2d& pixel);
+
+/**
+ * @brief Backproject a pixel using the inverse intrinsics matrix and a
+ * depth value to compute the corresponding 3D point.
+ * @param intrinsic_matrix_inv Eigen::Matrix3d representing the inverse camera
+ * matrix K_inv.
+ * @param pixel Eigen::Vector2d representing camera pixel coordinates.
+ * @param depth Depth for the corresponding pixel.
+ * @return 3D point in camera space
+ */
+Eigen::Vector3d backproject_point(const Eigen::Matrix3d& intrinsic_matrix_inv,
+                                  const Eigen::Vector2d& pixel,
+                                  double depth);
 }  // namespace vortex::utils::math
 
 #endif  // VORTEX_UTILS_MATH_HPP
