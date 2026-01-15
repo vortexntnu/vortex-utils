@@ -379,6 +379,8 @@ struct CameraIntrinsics {
         if (skew != 0.0) {
             k_inv(0, 1) = -skew / (fx * fy);
             k_inv(0, 2) = (skew * cy - cx * fy) / (fx * fy);
+        } else {
+            k_inv(0, 2) = -cx / fx;
         }
 
         return k_inv;
