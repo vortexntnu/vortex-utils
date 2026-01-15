@@ -406,6 +406,7 @@ struct CameraIntrinsics {
      * @throws std::runtime_error if Zc <= 0.
      */
     Eigen::Vector2d project_point(const Eigen::Vector3d& point) const {
+        validate_focals();
         const double x_c = point.x();
         const double y_c = point.y();
         const double z_c = point.z();
@@ -430,6 +431,7 @@ struct CameraIntrinsics {
      * @return ray in camera space (x, y, 1.0).
      */
     Eigen::Vector3d backproject_ray(const Eigen::Vector2d& pixel) const {
+        validate_focals();
         const double u = pixel(0);
         const double v = pixel(1);
 
