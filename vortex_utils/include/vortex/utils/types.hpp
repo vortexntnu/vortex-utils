@@ -1,6 +1,7 @@
 #ifndef VORTEX_UTILS_TYPES_HPP
 #define VORTEX_UTILS_TYPES_HPP
 
+#include <cmath>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
 #include <format>
@@ -33,6 +34,16 @@ struct Twist;
  * 2nd ed., Springer, 2022.
  */
 struct CameraIntrinsics;
+
+/**
+ * @brief Brown-Conrady (also referred to as Plumb Bob) distortion model that
+ * models radial and tangential distortion for a pinhole camera model.
+ * Uses the distortion coefficients (k1, k2, p1, p2 ,k3) where k_i are the
+ * radial terms and p_i are the tangential terms.
+ * Implements the forward distortion model, i.e. the mapping from
+ * undistorted normalized coordinates to distorted normalized coordinates.
+ */
+struct CameraDistortionModel;
 
 struct PoseEuler {
     double x{};
@@ -456,6 +467,39 @@ struct CameraIntrinsics {
                 "Backprojection failed. Depth must be positive.");
         }
         return depth * backproject_ray(pixel);
+    }
+};
+
+struct CameraDistortionModel {
+    double k1{0.0};
+    double k2{0.0};
+    double p1{0.0};
+    double p2{0.0};
+    double k3{0.0};
+
+    /**
+     * @brief Distort a point in normalized image coordinates following the
+     * Brown-Conrady forward distortion model. This matches the OpenCV
+     * convention.
+     * @param point Eigen::Vector2d representing and undistorted point in
+     * normalized image coordinates.
+     * @return 2D distorted point in normalized image coordinates.
+     */
+    Eigen::Vector2d distort_normalized(const Eigen::Vector2d& point) const {
+        const double x = point.x();
+        const double y = point.y();
+        const double r2 = x * x + y * y;
+        const double r4 = r2 * r2;
+        const double r6 = r4 * r2;
+
+        const double r_dist = 1.0 + k1 * r2 + k2 * r4 + k3 * r6;
+        const double t_dist_x = 2.0 * p1 * x * y + p2 * (r2 + 2.0 * x * x);
+        const double t_dist_y = p1 * (r2 + 2.0 * y * y) + 2.0 * p2 * x * y;
+
+        const double x_dist = r_dist * x + t_dist_x;
+        const double y_dist = r_dist * y + t_dist_y;
+
+        return {x_dist, y_dist};
     }
 };
 
