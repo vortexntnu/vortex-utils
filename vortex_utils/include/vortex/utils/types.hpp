@@ -358,6 +358,11 @@ struct LineSegment2D {
     Point2D p0{};
     Point2D p1{};
 
+    /**
+     * @brief Get the polar (Hesse normal) parametrization of the line segment.
+     * Enforces positive rho and theta in [0, 2pi).
+     * @return Line2D with rho and theta
+     */
     Line2D polar_parametrization() const {
         const double dx = p1.x - p0.x;
         const double dy = p1.y - p0.y;
