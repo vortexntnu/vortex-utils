@@ -1,8 +1,10 @@
 #ifndef VORTEX_UTILS_TYPES_HPP
 #define VORTEX_UTILS_TYPES_HPP
 
+#include <cmath>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+#include <stdexcept>
 #include "math.hpp"
 
 namespace vortex::utils::types {
@@ -24,6 +26,20 @@ struct Pose;
  * Fossen, 2021, containing the linear and angular velocities.
  */
 struct Twist;
+
+/**
+ * @brief Polar (Hesse normal) representation of a 2D line.
+ *
+ * @details
+ * - rho is the signed distance from the origin to the line along the normal.
+ * - theta is the angle (in radians) from the +x axis to the line's unit normal.
+ */
+struct Line2D;
+
+/**
+ * @brief Struct to represent a 2D line segment.
+ */
+struct LineSegment2D;
 
 struct PoseEuler {
     double x{};
@@ -327,6 +343,52 @@ inline PoseEuler Pose::as_pose_euler() const {
                   .yaw = euler_angles(2)};
     return eta;
 }
+
+struct Point2D {
+    double x{};
+    double y{};
+};
+
+struct Line2D {
+    double rho{};    ///< Distance from origin to the line in canonical form.
+    double theta{};  ///< Angle (rad) from +x axis to the unit normal.
+};
+
+struct LineSegment2D {
+    Point2D p0{};
+    Point2D p1{};
+
+    Line2D polar_parametrization() const {
+        const double dx = p1.x - p0.x;
+        const double dy = p1.y - p0.y;
+
+        const double len = std::hypot(dx, dy);
+
+        if (len <= std::numeric_limits<double>::epsilon()) {
+            throw std::runtime_error("Invalid length for line segment");
+        }
+
+        const double nx = -dy / len;
+        const double ny = dx / len;
+
+        double rho = nx * p0.x + ny * p0.y;
+        double theta = std::atan2(ny, nx);  // (-pi, pi]
+
+        // Enforce positive rho
+        if (rho < 0) {
+            rho = -rho;
+            theta += M_PI;
+        }
+
+        theta = std::fmod(theta, 2.0 * M_PI);
+
+        if (theta < 0) {
+            theta += 2.0 * M_PI;
+        }
+
+        return Line2D{.rho = rho, .theta = theta};
+    }
+};
 
 }  // namespace vortex::utils::types
 
