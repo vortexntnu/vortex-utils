@@ -143,3 +143,74 @@ TEST_F(TypesTests, test_twist) {
     EXPECT_NEAR(diff.q, 0.3, 1e-12);
     EXPECT_NEAR(diff.r, 1.4, 1e-12);
 }
+
+TEST_F(TypesTests, test_line_segment_2d) {
+    vortex::utils::types::LineSegment2D line_segment;
+    line_segment.p0 = {1.0, 0.2};
+    line_segment.p1 = {0.4, 1.2};
+
+    vortex::utils::types::Line2D line2d = line_segment.polar_parametrization();
+
+    double expected_rho = 0.96039207679805;     // sqrt(13)
+    double expected_theta = 0.540419500270584;  // atan2(4, 3)
+
+    EXPECT_NEAR(line2d.rho, expected_rho, 1e-12);
+    EXPECT_NEAR(line2d.theta, expected_theta, 1e-12);
+}
+
+TEST_F(TypesTests, test_line_segment_vertical) {
+    vortex::utils::types::LineSegment2D line_segment;
+    line_segment.p0 = {1.0, 0.0};
+    line_segment.p1 = {1.0, 1.2};
+
+    vortex::utils::types::Line2D line2d = line_segment.polar_parametrization();
+
+    double expected_rho = 1.0;
+    double expected_theta = 0.0;
+
+    EXPECT_NEAR(line2d.rho, expected_rho, 1e-12);
+    EXPECT_NEAR(line2d.theta, expected_theta, 1e-12);
+}
+
+TEST_F(TypesTests, test_line_segment_horizontal) {
+    vortex::utils::types::LineSegment2D line_segment;
+    line_segment.p0 = {1.2, 1.2};
+    line_segment.p1 = {0, 1.2};
+
+    vortex::utils::types::Line2D line2d = line_segment.polar_parametrization();
+
+    double expected_rho = 1.2;
+    double expected_theta = M_PI / 2.0;
+
+    EXPECT_NEAR(line2d.rho, expected_rho, 1e-12);
+    EXPECT_NEAR(line2d.theta, expected_theta, 1e-12);
+}
+
+TEST_F(TypesTests, test_line_segment_zero_length) {
+    vortex::utils::types::LineSegment2D line_segment;
+    line_segment.p0 = {0.0, 0.0};
+    line_segment.p1 = {0.0, 0.0};
+
+    ASSERT_THROW(line_segment.polar_parametrization(), std::runtime_error);
+}
+
+TEST_F(TypesTests, test_line_segment_wrap_theta) {
+    vortex::utils::types::LineSegment2D line_segment1;
+    double epsilon = 0.01;
+    line_segment1.p0 = {0.4, -0.2};
+    line_segment1.p1 = {0.4 - epsilon, 0.4};
+
+    vortex::utils::types::Line2D line2d1 =
+        line_segment1.polar_parametrization();
+
+    vortex::utils::types::LineSegment2D line_segment2;
+    line_segment2.p0 = {0.4, -0.2};
+    line_segment2.p1 = {0.4 + epsilon, 0.4};
+
+    vortex::utils::types::Line2D line2d2 =
+        line_segment2.polar_parametrization();
+
+    EXPECT_NEAR(line2d1.rho, line2d2.rho, 0.1);
+
+    EXPECT_NEAR(line2d1.theta + 2 * M_PI, line2d2.theta, 0.1);
+}
