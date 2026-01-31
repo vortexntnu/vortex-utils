@@ -19,6 +19,13 @@ inline rclcpp::QoS reliable_profile(const size_t depth = 10) {
     return profile;
 }
 
+inline rclcpp::QoS reliable_transient_local_profile(const size_t depth = 1) {
+    auto profile{rclcpp::QoS(rclcpp::KeepLast(depth))};
+    profile.reliable();
+    profile.transient_local();
+    return profile;
+}
+
 }  // namespace vortex::utils::qos_profiles
 
 #endif  // VORTEX_UTILS_QOS_PROFILES_HPP
