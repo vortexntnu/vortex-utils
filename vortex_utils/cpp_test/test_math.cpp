@@ -338,4 +338,125 @@ TEST(anti_windup, test_anti_windup) {
     EXPECT_TRUE(expected.isApprox(result, 1e-10));
 }
 
+TEST(average_quaternions, empty_input_throws) {
+    std::vector<Eigen::Quaterniond> quats;
+    EXPECT_THROW(average_quaternions(quats), std::invalid_argument);
+}
+
+TEST(average_quaternions, single_quaternion_returns_same) {
+    Eigen::Quaterniond q =
+        Eigen::Quaterniond(Eigen::AngleAxisd(0.7, Eigen::Vector3d::UnitX()));
+
+    std::vector<Eigen::Quaterniond> quats{q};
+
+    Eigen::Quaterniond avg = average_quaternions(quats);
+
+    EXPECT_NEAR(avg.angularDistance(q), 0.0, 1e-12);
+}
+
+TEST(average_quaternions, identical_quaternions) {
+    Eigen::Quaterniond q =
+        Eigen::Quaterniond(Eigen::AngleAxisd(1.2, Eigen::Vector3d::UnitZ()));
+
+    std::vector<Eigen::Quaterniond> quats = {q, q, q};
+
+    Eigen::Quaterniond avg = average_quaternions(quats);
+
+    EXPECT_NEAR(avg.angularDistance(q), 0.0, 1e-12);
+}
+
+TEST(average_quaternions, antipodal_quaternions) {
+    Eigen::Quaterniond q(Eigen::AngleAxisd(0.8, Eigen::Vector3d::UnitY()));
+
+    Eigen::Quaterniond q_neg = q;
+    q_neg.coeffs() *= -1.0;
+
+    std::vector<Eigen::Quaterniond> quats = {q, q_neg};
+
+    Eigen::Quaterniond avg = average_quaternions(quats);
+
+    EXPECT_NEAR(avg.angularDistance(q), 0.0, 1e-12);
+}
+
+TEST(average_quaternions, average_of_small_rotations_near_identity) {
+    std::vector<Eigen::Quaterniond> quats;
+
+    quats.emplace_back(Eigen::AngleAxisd(0.05, Eigen::Vector3d::UnitX()));
+    quats.emplace_back(Eigen::AngleAxisd(-0.05, Eigen::Vector3d::UnitX()));
+    quats.emplace_back(Eigen::AngleAxisd(0.02, Eigen::Vector3d::UnitX()));
+
+    Eigen::Quaterniond avg = average_quaternions(quats);
+
+    EXPECT_TRUE(avg.isApprox(Eigen::Quaterniond::Identity(), 1e-2));
+}
+
+TEST(average_quaternions, noisy_measurements_about_known_rotation) {
+    const Eigen::Quaterniond truth =
+        Eigen::Quaterniond(Eigen::AngleAxisd(1.0, Eigen::Vector3d::UnitZ()));
+
+    std::vector<Eigen::Quaterniond> quats;
+    quats.emplace_back(Eigen::AngleAxisd(1.02, Eigen::Vector3d::UnitZ()));
+    quats.emplace_back(Eigen::AngleAxisd(0.98, Eigen::Vector3d::UnitZ()));
+    quats.emplace_back(Eigen::AngleAxisd(1.01, Eigen::Vector3d::UnitZ()));
+    quats.emplace_back(Eigen::AngleAxisd(0.99, Eigen::Vector3d::UnitZ()));
+
+    Eigen::Quaterniond avg = average_quaternions(quats);
+
+    EXPECT_NEAR(avg.angularDistance(truth), 0.0, 1e-2);
+}
+
+TEST(average_quaternions, symmetric_opposing_axes) {
+    Eigen::Quaterniond qx =
+        Eigen::Quaterniond(Eigen::AngleAxisd(0.5, Eigen::Vector3d::UnitX()));
+    Eigen::Quaterniond qy =
+        Eigen::Quaterniond(Eigen::AngleAxisd(0.5, Eigen::Vector3d::UnitY()));
+
+    std::vector<Eigen::Quaterniond> quats{qx, qy};
+
+    Eigen::Quaterniond avg = average_quaternions(quats);
+
+    double dx = avg.angularDistance(qx);
+    double dy = avg.angularDistance(qy);
+
+    EXPECT_NEAR(dx, dy, 1e-6);
+}
+
+TEST(average_quaternions, test_degeneracy) {
+    Eigen::Quaterniond q0 =
+        Eigen::Quaterniond(Eigen::AngleAxisd(0.0, Eigen::Vector3d::UnitZ()));
+
+    Eigen::Quaterniond q180 =
+        Eigen::Quaterniond(Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitZ()));
+
+    EXPECT_THROW(average_quaternions({q0, q180}), std::runtime_error);
+}
+
+TEST(enu_ned_rotation, explicit_matrix_values) {
+    Eigen::Quaterniond q_enu = euler_to_quat(0, 0, M_PI / 2);
+    Eigen::Quaterniond q_ned = enu_ned_rotation(q_enu);
+
+    Eigen::Matrix3d R_frame;
+    R_frame << 0, 1, 0, 1, 0, 0, 0, 0, -1;
+
+    Eigen::Matrix3d R_expected = R_frame * q_enu.toRotationMatrix();
+    Eigen::Matrix3d R_actual = q_ned.toRotationMatrix();
+
+    EXPECT_TRUE(R_actual.isApprox(R_expected, 1e-12));
+}
+
+TEST(enu_ned_rotation, test_symmetry) {
+    Eigen::Quaterniond q_enu = Eigen::Quaterniond(
+        Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d::UnitZ()));
+
+    Eigen::Quaterniond q_ned = enu_ned_rotation(q_enu);
+    Eigen::Quaterniond q_enu_converted_back = enu_ned_rotation(q_ned);
+
+    EXPECT_TRUE(q_enu.isApprox(q_enu_converted_back, 1e-12) ||
+                q_enu.isApprox(Eigen::Quaterniond(-q_enu_converted_back.w(),
+                                                  -q_enu_converted_back.x(),
+                                                  -q_enu_converted_back.y(),
+                                                  -q_enu_converted_back.z()),
+                               1e-12));
+}
+
 }  // namespace vortex::utils::math

@@ -131,4 +131,62 @@ Eigen::VectorXd anti_windup(const double dt,
     return integral_anti_windup;
 }
 
+Eigen::Quaterniond average_quaternions(
+    const std::vector<Eigen::Quaterniond>& quaternions) {
+    if (quaternions.empty()) {
+        throw std::invalid_argument(
+            "average_quaternions: input vector must not be empty");
+    }
+
+    Eigen::Matrix4d scatter_matrix = Eigen::Matrix4d::Zero();
+    std::ranges::for_each(quaternions, [&](const auto& q) {
+        scatter_matrix +=
+            q.normalized().coeffs() * q.normalized().coeffs().transpose();
+    });
+
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(scatter_matrix);
+
+    if (eigensolver.info() != Eigen::Success) {
+        throw std::runtime_error(
+            "average_quaternions: eigen decomposition failed after bias");
+    }
+
+    const auto& eigenvalues = eigensolver.eigenvalues();
+    constexpr double eps = 1e-12;
+
+    if (std::abs(eigenvalues(3) - eigenvalues(2)) < eps) {
+        throw std::runtime_error(
+            "average_quaternions_weighted: average orientation is not unique");
+    }
+
+    const Eigen::Vector4d eigenvector = eigensolver.eigenvectors().col(3);
+
+    Eigen::Quaterniond avg_q;
+    avg_q.x() = eigenvector(0);
+    avg_q.y() = eigenvector(1);
+    avg_q.z() = eigenvector(2);
+    avg_q.w() = eigenvector(3);
+
+    if (avg_q.w() < 0.0) {
+        avg_q.coeffs() *= -1.0;
+    }
+
+    return avg_q.normalized();
+}
+
+Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat) {
+    const Eigen::Matrix3d rotation_matrix_enu_to_ned = [] {
+        Eigen::Matrix3d rotmat;
+        rotmat.col(0) = Eigen::Vector3d(0, 1, 0);
+        rotmat.col(1) = Eigen::Vector3d(1, 0, 0);
+        rotmat.col(2) = Eigen::Vector3d(0, 0, -1);
+        return rotmat;
+    }();
+
+    Eigen::Quaterniond q_out =
+        Eigen::Quaterniond(rotation_matrix_enu_to_ned) * quat.normalized();
+
+    return q_out.normalized();
+}
+
 }  // namespace vortex::utils::math

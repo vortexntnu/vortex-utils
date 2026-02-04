@@ -5,6 +5,7 @@
 #include <concepts>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+#include <vector>
 
 namespace vortex::utils::math {
 
@@ -144,6 +145,26 @@ Eigen::VectorXd anti_windup(const double dt,
                             const Eigen::VectorXd& integral,
                             const double min_val,
                             const double max_val);
+
+/**
+ * @brief Computes the average orientation from a set of quaternions.
+ * @param quaternions A vector of Eigen::Quaterniond representing orientations.
+ * @return Eigen::Quaterniond The normalized average quaternion with positive
+ * scalar (w) part.
+ * @warning The average orientation is degenerate when input rotations
+ *          are antipodally distributed (≈180° apart).
+ * @throws std::invalid_argument if the input vector is empty.
+ */
+Eigen::Quaterniond average_quaternions(
+    const std::vector<Eigen::Quaterniond>& quaternions);
+
+/**
+ * @brief Convert a quaternion between ENU and NED frames. Works both ways.
+ * @param quat Eigen::Quaterniond
+ * @return Eigen::Quaterniond
+ */
+Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat);
+
 }  // namespace vortex::utils::math
 
 #endif  // VORTEX_UTILS_MATH_HPP
