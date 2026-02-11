@@ -177,14 +177,14 @@ inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
     return poses;
 }
 
-
 /**
  * @brief Converts a ROS vortex_msgs::msg::OperationMode to an internal Mode
  * enum.
  * @param mode_msg vortex_msgs::msg::OperationMode
  * @return vortex::utils::types::Mode Internal mode representation
  */
-inline vortex::utils::types::Mode convert_from_ros(const vortex_msgs::msg::OperationMode& mode_msg) {
+inline vortex::utils::types::Mode convert_from_ros(
+    const vortex_msgs::msg::OperationMode& mode_msg) {
     switch (mode_msg.operation_mode) {
         case vortex_msgs::msg::OperationMode::MANUAL:
             return vortex::utils::types::Mode::manual;

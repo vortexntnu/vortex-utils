@@ -13,7 +13,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-vortex_utils_ros/vortex_utils_ros/heartbeatpublisher.py
 
 # C extensions
 *.so
