@@ -15,3 +15,12 @@ def reliable_profile(depth: int = 10) -> qos.QoSProfile:
         depth=depth,
         reliability=qos.ReliabilityPolicy.RELIABLE,
     )
+
+
+def reliable_transient_local_profile(depth: int = 1) -> qos.QoSProfile:
+    return qos.QoSProfile(
+        history=qos.HistoryPolicy.KEEP_LAST,
+        depth=depth,
+        reliability=qos.ReliabilityPolicy.RELIABLE,
+        durability=qos.DurabilityPolicy.TRANSIENT_LOCAL,
+    )
