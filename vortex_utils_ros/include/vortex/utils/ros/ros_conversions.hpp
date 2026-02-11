@@ -14,6 +14,7 @@
 #include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <vortex_msgs/msg/landmark_array.hpp>
+#include <vortex_msgs/msg/operation_mode.hpp>
 
 #include <vortex/utils/concepts.hpp>
 #include <vortex/utils/math.hpp>
@@ -174,6 +175,25 @@ inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
         poses.push_back(ros_pose_to_pose(landmark.pose.pose));
     }
     return poses;
+}
+
+
+/**
+ * @brief Converts a ROS vortex_msgs::msg::OperationMode to an internal Mode
+ * enum.
+ * @param mode_msg vortex_msgs::msg::OperationMode
+ * @return vortex::utils::types::Mode Internal mode representation
+ */
+inline vortex::utils::types::Mode convert_from_ros(const vortex_msgs::msg::OperationMode& mode_msg) {
+    switch (mode_msg.operation_mode) {
+        case vortex_msgs::msg::OperationMode::MANUAL:
+            return vortex::utils::types::Mode::manual;
+        case vortex_msgs::msg::OperationMode::AUTONOMOUS:
+            return vortex::utils::types::Mode::autonomous;
+        case vortex_msgs::msg::OperationMode::REFERENCE:
+            return vortex::utils::types::Mode::reference;
+    }
+    throw std::runtime_error("Invalid operation mode.");
 }
 
 }  // namespace vortex::utils::ros_conversions
