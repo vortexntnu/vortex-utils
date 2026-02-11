@@ -400,6 +400,29 @@ struct LineSegment2D {
     }
 };
 
+/**
+ * @brief Enum class for operation modes.
+ */
+enum class Mode : uint8_t { manual, autonomous, reference };
+
+/**
+ * @brief Convert Mode enum to string for logging or display purposes.
+ * @param mode Mode enum value
+ * @return std::string representation of the mode
+ */
+inline std::string mode_to_string(Mode mode) {
+    switch (mode) {
+        case Mode::manual:
+            return "manual mode";
+        case Mode::autonomous:
+            return "autonomous mode";
+        case Mode::reference:
+            return "reference mode";
+        default:
+            throw std::runtime_error("Invalid operation mode.");
+    }
+}
+
 }  // namespace vortex::utils::types
 
 #endif  // VORTEX_UTILS_TYPES_HPP
