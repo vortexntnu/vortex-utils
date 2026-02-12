@@ -403,7 +403,7 @@ struct LineSegment2D {
 /**
  * @brief Enum class for operation modes.
  */
-enum class Mode : uint8_t { manual, autonomous, reference };
+enum class Mode : int { autonomous, manual, reference };
 
 /**
  * @brief Convert Mode enum to string for logging or display purposes.
@@ -419,7 +419,8 @@ inline std::string mode_to_string(Mode mode) {
         case Mode::reference:
             return "reference mode";
         default:
-            throw std::runtime_error("Invalid operation mode.");
+            throw std::runtime_error(
+                "String conversion failed, invalid mode value");
     }
 }
 

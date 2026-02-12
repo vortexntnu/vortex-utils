@@ -193,7 +193,32 @@ inline vortex::utils::types::Mode convert_from_ros(
         case vortex_msgs::msg::OperationMode::REFERENCE:
             return vortex::utils::types::Mode::reference;
     }
-    throw std::runtime_error("Invalid operation mode.");
+    throw std::runtime_error("Conversion failed, invalid operation mode value");
+}
+
+/**
+ * @brief Converts an internal Mode enum to a ROS
+ * vortex_msgs::msg::OperationMode.
+ * @param mode vortex::utils::types::Mode
+ * @return vortex_msgs::msg::OperationMode ROS mode message
+ */
+inline vortex_msgs::msg::OperationMode convert_to_ros(
+    const vortex::utils::types::Mode& mode) {
+    vortex_msgs::msg::OperationMode mode_msg;
+    switch (mode) {
+        case vortex::utils::types::Mode::manual:
+            mode_msg.operation_mode = vortex_msgs::msg::OperationMode::MANUAL;
+            return mode_msg;
+        case vortex::utils::types::Mode::autonomous:
+            mode_msg.operation_mode =
+                vortex_msgs::msg::OperationMode::AUTONOMOUS;
+            return mode_msg;
+        case vortex::utils::types::Mode::reference:
+            mode_msg.operation_mode =
+                vortex_msgs::msg::OperationMode::REFERENCE;
+            return mode_msg;
+    }
+    throw std::runtime_error("Conversion failed, invalid operation mode value");
 }
 
 }  // namespace vortex::utils::ros_conversions
