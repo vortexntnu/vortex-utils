@@ -58,6 +58,30 @@ geometry_msgs::msg::Pose to_pose_msg(const T& pose_like) {
 }
 
 /**
+ * @brief Converts position and orientation in Eigen types to a ROS
+ * geometry_msgs::msg::Pose.
+ *
+ * @param pos Position as Eigen::Vector3d
+ * @param ori Orientation as Eigen::Quaterniond
+ * @return geometry_msgs::msg::Pose ROS pose message
+ */
+inline geometry_msgs::msg::Pose eigen_to_pose_msg(
+    const Eigen::Vector3d& pos,
+    const Eigen::Quaterniond& ori) {
+    geometry_msgs::msg::Pose pose;
+    pose.position.x = pos.x();
+    pose.position.y = pos.y();
+    pose.position.z = pos.z();
+
+    pose.orientation.w = ori.w();
+    pose.orientation.x = ori.x();
+    pose.orientation.y = ori.y();
+    pose.orientation.z = ori.z();
+
+    return pose;
+}
+
+/**
  * @brief Converts a range of PoseLike objects to a vector of ROS pose messages.
  *
  * The input range may be any std::ranges::input_range whose value type
