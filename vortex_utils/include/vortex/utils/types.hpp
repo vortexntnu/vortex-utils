@@ -1,7 +1,6 @@
 #ifndef VORTEX_UTILS_TYPES_HPP
 #define VORTEX_UTILS_TYPES_HPP
 
-#include <array>
 #include <cmath>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
@@ -439,6 +438,7 @@ struct SonarInfo {
      * @brief Convert pixel indices (centers) to sonar coordinates in meters.
      *
      * Assumes:
+     * - Integer coordinates correspond to pixel centers
      * - (0, 0) is the top-left pixel (image corner)
      * - Sonar frame origin is at bottom image boundary, centered horizontally
      * - x is positive forward (up in image)
@@ -458,8 +458,7 @@ struct SonarInfo {
      * meters.
      *
      * Assumes:
-     * - pixel_x and pixel_y are continuous pixel coordinates (e.g., from
-     * subpixel estimation)
+     * - Integer coordinates correspond to pixel boundaries
      * - (0, 0) is the top-left pixel (image corner)
      * - Sonar frame origin is at bottom image boundary, centered horizontally
      * - x is positive forward (up in image)
