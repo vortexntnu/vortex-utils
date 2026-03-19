@@ -13,6 +13,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <vortex_msgs/msg/landmark_array.hpp>
 #include <vortex_msgs/msg/operation_mode.hpp>
 
@@ -199,6 +200,24 @@ inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
         poses.push_back(ros_pose_to_pose(landmark.pose.pose));
     }
     return poses;
+}
+
+/**
+ * @brief Converts a ROS geometry_msgs::msg::TwistWithCovarianceStamped to an
+ * internal Twist type.
+ * @param twist_msg geometry_msgs::msg::TwistWithCovarianceStamped
+ * @return vortex::utils::types::Twist Internal twist representation
+ */
+inline vortex::utils::types::Twist ros_twist_cov_msg_to_twist(
+    const geometry_msgs::msg::TwistWithCovarianceStamped& twist_msg) {
+    vortex::utils::types::Twist twist;
+    twist.u = twist_msg.twist.twist.linear.x;
+    twist.v = twist_msg.twist.twist.linear.y;
+    twist.w = twist_msg.twist.twist.linear.z;
+    twist.p = twist_msg.twist.twist.angular.x;
+    twist.q = twist_msg.twist.twist.angular.y;
+    twist.r = twist_msg.twist.twist.angular.z;
+    return twist;
 }
 
 /**
