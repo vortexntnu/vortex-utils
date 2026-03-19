@@ -1,6 +1,7 @@
 #ifndef VORTEX_UTILS_TYPES_HPP
 #define VORTEX_UTILS_TYPES_HPP
 
+#include <array>
 #include <cmath>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
@@ -423,6 +424,55 @@ inline std::string mode_to_string(Mode mode) {
                 "String conversion failed, invalid mode value");
     }
 }
+
+/**
+ * @brief Struct to represent sonar information and provide utility functions
+ * for coordinate conversion.
+ */
+struct SonarInfo {
+    double meters_per_pixel_x{};
+    double meters_per_pixel_y{};
+    int image_width{};
+    int image_height{};
+
+    /**
+     * @brief Convert pixel indices (centers) to sonar coordinates in meters.
+     *
+     * Assumes:
+     * - (0, 0) is the top-left pixel (image corner)
+     * - Sonar frame origin is at bottom image boundary, centered horizontally
+     * - x is positive forward (up in image)
+     * - y is positive to the right (right in image)
+     */
+    Eigen::Vector3d pixel_index_to_sonar_metric(double pixel_x,
+                                                double pixel_y) const {
+        const double sonar_x =
+            ((pixel_x + 0.5) - image_width / 2.0) * meters_per_pixel_x;
+        const double sonar_y =
+            (image_height - (pixel_y + 0.5)) * meters_per_pixel_y;
+        return Eigen::Vector3d{sonar_x, sonar_y, 0.0};
+    }
+
+    /**
+     * @brief Convert continuous pixel coordinates to sonar coordinates in
+     * meters.
+     *
+     * Assumes:
+     * - pixel_x and pixel_y are continuous pixel coordinates (e.g., from
+     * subpixel estimation)
+     * - (0, 0) is the top-left pixel (image corner)
+     * - Sonar frame origin is at bottom image boundary, centered horizontally
+     * - x is positive forward (up in image)
+     * - y is positive to the right (right in image)
+     */
+    Eigen::Vector3d pixel_continuous_to_sonar_metric(double pixel_x,
+                                                     double pixel_y) const {
+        const double sonar_x =
+            (pixel_x - image_width / 2.0) * meters_per_pixel_x;
+        const double sonar_y = (image_height - pixel_y) * meters_per_pixel_y;
+        return Eigen::Vector3d{sonar_x, sonar_y, 0.0};
+    }
+};
 
 }  // namespace vortex::utils::types
 
