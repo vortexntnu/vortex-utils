@@ -46,6 +46,12 @@ struct Line2D;
  */
 struct LineSegment2D;
 
+/**
+ * @brief Struct to represent sonar information and provide utility functions
+ * for conversion between pixel coordinates and sonar metric coordinates.
+ */
+struct SonarInfo;
+
 struct PoseEuler {
     double x{};
     double y{};
@@ -423,6 +429,58 @@ inline std::string mode_to_string(Mode mode) {
                 "String conversion failed, invalid mode value");
     }
 }
+
+struct SonarInfo {
+    double meters_per_pixel_x{};
+    double meters_per_pixel_y{};
+    int image_width{};
+    int image_height{};
+
+    /**
+     * @brief Convert pixel indices (centers) to sonar coordinates in meters.
+     *
+     * Assumes:
+     * - Integer coordinates correspond to pixel centers
+     * - (0, 0) is the top-left pixel (image corner)
+     * - Sonar frame origin is at bottom image boundary, centered horizontally
+     * - x (metric) is positive forward (up in image)
+     * - y (metric) is positive to the right (right in image)
+     *
+     * @param pixel_x Continuous pixel x coordinate (can be non-integer)
+     * @param pixel_y Continuous pixel y coordinate (can be non-integer)
+     * @return Point2D with sonar coordinates in meters
+     */
+    Point2D pixel_index_to_sonar_metric(double pixel_x, double pixel_y) const {
+        const double sonar_x =
+            ((pixel_x + 0.5) - image_width / 2.0) * meters_per_pixel_x;
+        const double sonar_y =
+            (image_height - (pixel_y + 0.5)) * meters_per_pixel_y;
+        return Point2D{.x = sonar_x, .y = sonar_y};
+    }
+
+    /**
+     * @brief Convert continuous pixel coordinates to sonar coordinates in
+     * meters.
+     *
+     * Assumes:
+     * - Integer coordinates correspond to pixel boundaries
+     * - (0, 0) is the top-left pixel (image corner)
+     * - Sonar frame origin is at bottom image boundary, centered horizontally
+     * - x (metric) is positive forward (up in image)
+     * - y (metric) is positive to the right (right in image)
+     *
+     * @param pixel_x Continuous pixel x coordinate (can be non-integer)
+     * @param pixel_y Continuous pixel y coordinate (can be non-integer)
+     * @return Point2D with sonar coordinates in meters
+     */
+    Point2D pixel_continuous_to_sonar_metric(double pixel_x,
+                                             double pixel_y) const {
+        const double sonar_x =
+            (pixel_x - image_width / 2.0) * meters_per_pixel_x;
+        const double sonar_y = (image_height - pixel_y) * meters_per_pixel_y;
+        return Point2D{.x = sonar_x, .y = sonar_y};
+    }
+};
 
 }  // namespace vortex::utils::types
 
