@@ -127,6 +127,27 @@ inline vortex::utils::types::Pose ros_pose_to_pose(
 }
 
 /**
+ * @brief Converts a ROS geometry_msgs::msg::Pose to an internal Pose type.
+ * @param pose ROS pose message
+ * @return vortex::utils::types::PoseEuler Internal pose representation
+ */
+inline vortex::utils::types::PoseEuler ros_pose_to_pose_euler(
+    const geometry_msgs::msg::Pose& pose) {
+    vortex::utils::types::PoseEuler p;
+    p.x = pose.position.x;
+    p.y = pose.position.y;
+    p.z = pose.position.z;
+
+    Eigen::Quaterniond q(pose.orientation.w, pose.orientation.x,
+                         pose.orientation.y, pose.orientation.z);
+    Eigen::Vector3d euler = vortex::utils::math::quat_to_euler(q);
+    p.roll = euler(0);
+    p.pitch = euler(1);
+    p.yaw = euler(2);
+    return p;
+}
+
+/**
  * @brief Converts a ROS geometry_msgs::msg::Pose to an internal Pose vector
  * type.
  * @param pose geometry_msgs::msg::Pose
@@ -203,21 +224,20 @@ inline std::vector<vortex::utils::types::Pose> ros_to_pose_vec(
 }
 
 /**
- * @brief Converts a ROS geometry_msgs::msg::TwistWithCovarianceStamped to an
+ * @brief Converts a ROS geometry_msgs::msg::Twist to an
  * internal Twist type.
- * @param twist_msg geometry_msgs::msg::TwistWithCovarianceStamped
+ * @param twist_msg geometry_msgs::msg::Twist
  * @return vortex::utils::types::Twist Internal twist representation
  */
-inline vortex::utils::types::Twist ros_twist_cov_msg_to_twist(
-    const geometry_msgs::msg::TwistWithCovarianceStamped& twist_msg) {
-    const auto& t = twist_msg.twist.twist;
+inline vortex::utils::types::Twist ros_twist_to_twist(
+    const geometry_msgs::msg::Twist& twist_msg) {
     return vortex::utils::types::Twist{
-        .u = t.linear.x,
-        .v = t.linear.y,
-        .w = t.linear.z,
-        .p = t.angular.x,
-        .q = t.angular.y,
-        .r = t.angular.z,
+        .u = twist_msg.linear.x,
+        .v = twist_msg.linear.y,
+        .w = twist_msg.linear.z,
+        .p = twist_msg.angular.x,
+        .q = twist_msg.angular.y,
+        .r = twist_msg.angular.z,
     };
 }
 
