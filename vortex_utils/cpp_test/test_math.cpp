@@ -282,6 +282,93 @@ TEST(euler_to_quat_vec3, roll_pitch_yaw_all_nonzero) {
     EXPECT_TRUE(result.isApprox(expected, 1e-3));
 }
 
+TEST(quaternion_error, identity_quaternions_give_zero_error) {
+    Eigen::Quaterniond q = Eigen::Quaterniond::Identity();
+    Eigen::Vector3d err = quaternion_error(q, q);
+    EXPECT_TRUE(err.isApprox(Eigen::Vector3d::Zero(), 1e-12));
+}
+
+TEST(quaternion_error, small_yaw_rotation) {
+    double angle = 0.1;
+    Eigen::Quaterniond q_ref = Eigen::Quaterniond::Identity();
+    Eigen::Quaterniond q_meas(
+        Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitZ()));
+
+    Eigen::Vector3d err = quaternion_error(q_ref, q_meas);
+
+    // For small angles, 2*vec(q_err) ≈ axis-angle vector
+    EXPECT_NEAR(err(0), 0.0, 1e-6);
+    EXPECT_NEAR(err(1), 0.0, 1e-6);
+    EXPECT_NEAR(err(2), angle, 1e-3);
+}
+
+TEST(quaternion_error, small_roll_rotation) {
+    double angle = 0.15;
+    Eigen::Quaterniond q_ref = Eigen::Quaterniond::Identity();
+    Eigen::Quaterniond q_meas(
+        Eigen::AngleAxisd(angle, Eigen::Vector3d::UnitX()));
+
+    Eigen::Vector3d err = quaternion_error(q_ref, q_meas);
+
+    EXPECT_NEAR(err(0), angle, 1e-3);
+    EXPECT_NEAR(err(1), 0.0, 1e-6);
+    EXPECT_NEAR(err(2), 0.0, 1e-6);
+}
+
+TEST(quaternion_error, error_is_zero_for_same_orientation) {
+    Eigen::Quaterniond q(Eigen::AngleAxisd(1.2, Eigen::Vector3d::UnitY()));
+    Eigen::Vector3d err = quaternion_error(q, q);
+    EXPECT_TRUE(err.isApprox(Eigen::Vector3d::Zero(), 1e-12));
+}
+
+TEST(quaternion_error, antipodal_quaternions_give_zero_error) {
+    Eigen::Quaterniond q(Eigen::AngleAxisd(0.8, Eigen::Vector3d::UnitZ()));
+    Eigen::Quaterniond q_neg = q;
+    q_neg.coeffs() = -q_neg.coeffs();
+
+    Eigen::Vector3d err = quaternion_error(q, q_neg);
+    EXPECT_TRUE(err.isApprox(Eigen::Vector3d::Zero(), 1e-12));
+}
+
+TEST(quaternion_error, ninety_degree_rotation) {
+    Eigen::Quaterniond q_ref = Eigen::Quaterniond::Identity();
+    Eigen::Quaterniond q_meas(
+        Eigen::AngleAxisd(M_PI / 2, Eigen::Vector3d::UnitZ()));
+
+    Eigen::Vector3d err = quaternion_error(q_ref, q_meas);
+
+    // 2*sin(pi/4) ≈ 1.414, actual angle is pi/2 ≈ 1.571
+    // The approximation diverges for larger angles but direction is correct
+    EXPECT_NEAR(err(0), 0.0, 1e-12);
+    EXPECT_NEAR(err(1), 0.0, 1e-12);
+    EXPECT_GT(err(2), 0.0);
+}
+
+TEST(quaternion_error, sign_convention_positive_for_positive_rotation) {
+    Eigen::Quaterniond q_ref = Eigen::Quaterniond::Identity();
+
+    Eigen::Quaterniond q_pos(Eigen::AngleAxisd(0.3, Eigen::Vector3d::UnitX()));
+    Eigen::Quaterniond q_neg(Eigen::AngleAxisd(-0.3, Eigen::Vector3d::UnitX()));
+
+    Eigen::Vector3d err_pos = quaternion_error(q_ref, q_pos);
+    Eigen::Vector3d err_neg = quaternion_error(q_ref, q_neg);
+
+    EXPECT_GT(err_pos(0), 0.0);
+    EXPECT_LT(err_neg(0), 0.0);
+}
+
+TEST(quaternion_error, combined_rotation) {
+    Eigen::Quaterniond q_ref(Eigen::AngleAxisd(0.5, Eigen::Vector3d::UnitZ()));
+    Eigen::Quaterniond q_meas(Eigen::AngleAxisd(0.7, Eigen::Vector3d::UnitZ()));
+
+    Eigen::Vector3d err = quaternion_error(q_ref, q_meas);
+
+    // Error should be approximately 0.2 rad about Z
+    EXPECT_NEAR(err(0), 0.0, 1e-12);
+    EXPECT_NEAR(err(1), 0.0, 1e-12);
+    EXPECT_NEAR(err(2), 0.2, 1e-3);
+}
+
 // Test pseudo inverse, results from
 // https://www.emathhelp.net/calculators/linear-algebra/pseudoinverse-calculator
 TEST(pseudo_inverse, pseudo_inverse_of_square_matrix_same_as_inverse) {
