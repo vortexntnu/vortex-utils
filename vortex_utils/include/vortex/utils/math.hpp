@@ -113,6 +113,21 @@ Eigen::Quaterniond euler_to_quat(const double roll,
 Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler);
 
 /**
+ * @brief Compute the 3D orientation error between two quaternions.
+ *
+ * Computes the rotation from @p q_from to @p q_to and returns the
+ * corresponding axis-angle-like error vector: 2 * vec(q_from^{-1} * q_to).
+ * Uses shortest-path convention (flips sign when q_err.w < 0).
+ * Only an approximation. For large errors it underestimates the true angle.
+ *
+ * @param q_from Start orientation (e.g. reference).
+ * @param q_to   End orientation (e.g. measured).
+ * @return 3D error vector in radians (exact for small errors).
+ */
+Eigen::Vector3d quaternion_error(const Eigen::Quaterniond& q_from,
+                                 const Eigen::Quaterniond& q_to);
+
+/**
  * @brief Computes the Moore-Penrose pseudo-inverse of a matrix.
  * @param matrix The input matrix to be inverted.
  * @return The pseudo-inverse of the input matrix.
