@@ -6,6 +6,7 @@
 #include <vortex/utils/types.hpp>
 #include <vortex/utils/waypoint_utils.hpp>
 #include <vortex_msgs/msg/waypoint.hpp>
+#include <vortex_msgs/msg/waypoint_mode.hpp>
 
 namespace vortex::utils::waypoints {
 
@@ -13,19 +14,20 @@ namespace vortex::utils::waypoints {
  * @brief Convert a ROS waypoint mode to a WaypointMode enum.
  * @throws std::invalid_argument if the mode value is not recognized.
  */
-inline WaypointMode waypoint_mode_from_ros(uint8_t mode) {
-    switch (mode) {
-        case vortex_msgs::msg::Waypoint::FULL_POSE:
+inline WaypointMode waypoint_mode_from_ros(
+    const vortex_msgs::msg::WaypointMode& mode_msg) {
+    switch (mode_msg.mode) {
+        case vortex_msgs::msg::WaypointMode::FULL_POSE:
             return WaypointMode::FULL_POSE;
-        case vortex_msgs::msg::Waypoint::ONLY_POSITION:
+        case vortex_msgs::msg::WaypointMode::ONLY_POSITION:
             return WaypointMode::ONLY_POSITION;
-        case vortex_msgs::msg::Waypoint::FORWARD_HEADING:
+        case vortex_msgs::msg::WaypointMode::FORWARD_HEADING:
             return WaypointMode::FORWARD_HEADING;
-        case vortex_msgs::msg::Waypoint::ONLY_ORIENTATION:
+        case vortex_msgs::msg::WaypointMode::ONLY_ORIENTATION:
             return WaypointMode::ONLY_ORIENTATION;
         default:
             throw std::invalid_argument("Invalid ROS waypoint mode: " +
-                                        std::to_string(mode));
+                                        std::to_string(mode_msg.mode));
     }
 }
 
@@ -36,7 +38,7 @@ inline vortex::utils::types::Waypoint waypoint_from_ros(
     const vortex_msgs::msg::Waypoint& ros_wp) {
     vortex::utils::types::Waypoint wp;
     wp.pose = vortex::utils::ros_conversions::ros_pose_to_pose(ros_wp.pose);
-    wp.mode = waypoint_mode_from_ros(ros_wp.mode);
+    wp.mode = waypoint_mode_from_ros(ros_wp.waypoint_mode);
     return wp;
 }
 
