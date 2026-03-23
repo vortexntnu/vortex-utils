@@ -365,6 +365,12 @@ struct Line2D {
     double theta{};  ///< Angle (rad) from +x axis to the unit normal.
 };
 
+struct Point3D {
+    double x{};
+    double y{};
+    double z{};
+};
+
 struct LineSegment2D {
     Point2D p0{};
     Point2D p1{};
