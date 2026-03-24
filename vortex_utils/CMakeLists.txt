@@ -7,13 +7,19 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
-  src/math.cpp)
+  src/math.cpp
+  src/waypoint_utils.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  yaml-cpp
+)
 
 ament_target_dependencies(${PROJECT_NAME} PUBLIC
   Eigen3
