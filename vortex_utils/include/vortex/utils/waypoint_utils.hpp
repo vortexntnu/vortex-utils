@@ -10,6 +10,28 @@ using vortex::utils::types::Pose;
 using vortex::utils::types::WaypointMode;
 
 /**
+ * @brief Struct to represent a waypoint goal, containing the target pose, the
+ * waypoint mode, and the convergence threshold.
+ */
+struct WaypointGoal {
+    Pose pose;
+    WaypointMode mode;
+    double convergence_threshold{0.1};
+};
+
+/**
+ * @brief Struct to represent a landmark convergence goal, containing the
+ * convergence offset from the landmark pose, the waypoint mode, and the
+ * convergence threshold.
+ */
+struct LandmarkConvergenceGoal {
+    Pose convergence_offset;
+    WaypointMode mode;
+    double convergence_threshold{0.1};
+    double dead_reckoning_threshold{0.5};
+};
+
+/**
  * @brief Compute the waypoint goal by applying the mode logic to the incoming
  * waypoint.
  *
@@ -54,7 +76,32 @@ bool has_converged(const Pose& state,
 Pose apply_pose_offset(const Pose& base, const Pose& offset);
 
 /**
- * @brief Load a waypoint from a YAML file by identifier.
+ * @brief Load a pose from a YAML file by identifier.
+ *
+ * Expected YAML format:
+ * @code
+ * pose_name:
+ *   position:
+ *     x: 1.0
+ *     y: 0.0
+ *     z: -0.5
+ *   orientation:
+ *     roll: 0.0
+ *     pitch: 0.0
+ *     yaw: 3.14159
+ * @endcode
+ *
+ * @param file_path Path to the YAML file.
+ * @param identifier The pose key to look up.
+ * @return Pose with position and orientation (RPY converted to quaternion).
+ * @throws std::runtime_error if the file cannot be opened or the identifier is
+ * not found.
+ */
+Pose load_pose_from_yaml(const std::string& file_path,
+                         const std::string& identifier);
+
+/**
+ * @brief Load a waypoint goal from a YAML file by identifier.
  *
  * Expected YAML format:
  * @code
@@ -67,16 +114,51 @@ Pose apply_pose_offset(const Pose& base, const Pose& offset);
  *     roll: 0.0
  *     pitch: 0.0
  *     yaw: 3.14159
+ *   mode: 0  # WaypointMode as integer (e.g. 0 for FULL_POSE)
+ *   convergence_threshold: 0.1  # Optional, default is 0.1
  * @endcode
  *
  * @param file_path Path to the YAML file.
  * @param identifier The waypoint key to look up.
- * @return Pose with position and orientation (RPY converted to quaternion).
+ * @return WaypointGoal with pose, mode, and convergence threshold.
  * @throws std::runtime_error if the file cannot be opened or the identifier is
  * not found.
  */
-Pose load_waypoint_from_yaml(const std::string& file_path,
-                             const std::string& identifier);
+WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
+                                          const std::string& identifier);
+
+/**
+ * @brief Load a landmark convergence goal from a YAML file by identifier.
+ *
+ * The position/orientation fields represent the convergence offset from
+ * the landmark pose.
+ *
+ * Expected YAML format:
+ * @code
+ * landmark_goal_name:
+ *   position:
+ *     x: 0.0
+ *     y: 0.0
+ *     z: -0.5
+ *   orientation:
+ *     roll: 0.0
+ *     pitch: 0.0
+ *     yaw: 0.0
+ *   mode: 0  # WaypointMode as integer (e.g. 0 for FULL_POSE)
+ *   convergence_threshold: 0.1  # Optional, default is 0.1
+ *   dead_reckoning_threshold: 0.5  # Optional, default is 0.5
+ * @endcode
+ *
+ * @param file_path Path to the YAML file.
+ * @param identifier The landmark convergence key to look up.
+ * @return LandmarkConvergenceGoal with convergence offset, mode,
+ * convergence threshold, and dead-reckoning threshold.
+ * @throws std::runtime_error if the file cannot be opened or the identifier is
+ * not found.
+ */
+LandmarkConvergenceGoal load_landmark_goal_from_yaml(
+    const std::string& file_path,
+    const std::string& identifier);
 
 }  // namespace vortex::utils::waypoints
 
