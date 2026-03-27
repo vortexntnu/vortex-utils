@@ -6,6 +6,7 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(vortex_msgs REQUIRED)
 find_package(vortex_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
 
@@ -18,10 +19,21 @@ ament_target_dependencies(euler_odometry_publisher_node PUBLIC
   nav_msgs
   Eigen3
   vortex_utils
+  vortex_msgs
 )
 
 install(TARGETS euler_odometry_publisher_node
   DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
+install(
+  DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
 )
 
 ament_export_include_directories(include)

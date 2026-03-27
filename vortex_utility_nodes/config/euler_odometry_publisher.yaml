@@ -1,0 +1,5 @@
+euler_odometry_publisher_node:
+  ros__parameters:
+    topics:
+      input_odom: "nautilus/odom"
+      output_euler: "utils/odometry/euler"
