@@ -7,14 +7,14 @@ def generate_launch_description():
     config = os.path.join(
         get_package_share_directory('vortex_utility_nodes'),
         'config',
-        'euler_odometry_publisher.yaml'
+        'message_publisher.yaml'
     )
 
     return LaunchDescription([
         Node(
             package='vortex_utility_nodes',
-            executable='euler_odometry_publisher_node',
-            name='euler_odometry_publisher_node',
+            executable='message_publisher_node',
+            name='message_publisher_node',
             parameters=[config],
             output='screen',
         ),

@@ -1,0 +1,8 @@
+euler_odometry_publisher_node:
+  ros__parameters:
+    input_type: "odometry"
+    topics:
+      odom: "nautilus/odom"
+      waypoint: "fsm/waypoint"
+      reference_filter: "guidance/reference_filter"
+      output: "utils/message_publisher/"

@@ -10,11 +10,11 @@ find_package(vortex_msgs REQUIRED)
 find_package(vortex_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-add_executable(euler_odometry_publisher_node
-  src/euler_odometry_publisher_node.cpp
+add_executable(message_publisher_node
+  src/message_publisher.cpp
 )
 
-ament_target_dependencies(euler_odometry_publisher_node PUBLIC
+ament_target_dependencies(message_publisher_node PUBLIC
   rclcpp
   nav_msgs
   Eigen3
@@ -22,7 +22,7 @@ ament_target_dependencies(euler_odometry_publisher_node PUBLIC
   vortex_msgs
 )
 
-install(TARGETS euler_odometry_publisher_node
+install(TARGETS message_publisher_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
