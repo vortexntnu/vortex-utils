@@ -10,6 +10,7 @@ add_executable(
     test_math.cpp
     test_types.cpp
     test_concepts.cpp
+    test_waypoint_utils.cpp
 )
 
 target_link_libraries(
