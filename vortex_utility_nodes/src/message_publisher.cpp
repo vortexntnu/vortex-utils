@@ -11,7 +11,7 @@ class MessagePublisherNode : public rclcpp::Node {
    public:
     MessagePublisherNode() : Node("message_publisher_node") {
         this->declare_parameter<std::string>("input_type", "odometry");
-        this->declare_parameter<std::string>("topics.odom", "nautilus/odom");
+        this->declare_parameter<std::string>("topics.odometry", "nautilus/odom");
         this->declare_parameter<std::string>("topics.waypoint",
                                              "nautilus/waypoint");
         this->declare_parameter<std::string>("topics.reference_filter",
@@ -26,7 +26,7 @@ class MessagePublisherNode : public rclcpp::Node {
             this->create_publisher<vortex_msgs::msg::RPY>(output_topic, 2);
 
         if (input_type == "odometry") {
-            auto topic = this->get_parameter("topics.odom").as_string();
+            auto topic = this->get_parameter("topics.odometry").as_string();
             sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
                 topic, 2,
                 std::bind(&MessagePublisherNode::odom_callback, this,

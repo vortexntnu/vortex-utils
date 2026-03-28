@@ -1,8 +1,8 @@
 message_publisher_node:
   ros__parameters:
-    input_type: "odometry"
+    input_type: "reference_filter"
     topics:
-      odom: "nautilus/odom"
-      waypoint: "fsm/waypoint"
-      reference_filter: "guidance/reference_filter"
-      output: "utils/message_publisher/"
+      odometry: "nautilus/odom"
+      waypoint: "nautilus/waypoint"
+      reference_filter: "nautilus/guidance/dp_quat"
+      output: "/utils/message_publisher"
