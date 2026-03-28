@@ -1,4 +1,4 @@
-message_publisher_node:
+/**:
   ros__parameters:
     input_type: "reference_filter"
     output_namespace: ""

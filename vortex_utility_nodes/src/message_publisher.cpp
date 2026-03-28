@@ -13,17 +13,13 @@ class MessagePublisherNode : public rclcpp::Node {
    public:
     MessagePublisherNode() : Node("message_publisher_node") {
         this->declare_parameter<std::string>("input_type", "odometry");
-        this->declare_parameter<std::string>("topics.odometry",
-                                             "nautilus/odom");
-        this->declare_parameter<std::string>("topics.waypoint",
-                                             "nautilus/waypoint");
-        this->declare_parameter<std::string>("topics.reference_filter",
-                                             "nautilus/reference_filter");
-        this->declare_parameter<std::string>("topics.pose_stamped",
-                                             "nautilus/pose_stamped");
+        this->declare_parameter<std::string>("topics.odometry");
+        this->declare_parameter<std::string>("topics.waypoint");
+        this->declare_parameter<std::string>("topics.reference_filter");
+        this->declare_parameter<std::string>("topics.pose_stamped");
         this->declare_parameter<std::string>(
-            "topics.pose_with_covariance_stamped", "nautilus/pose");
-        this->declare_parameter<std::string>("topics.output", "utils/rpy");
+            "topics.pose_with_covariance_stamped");
+        this->declare_parameter<std::string>("topics.output");
 
         auto input_type = this->get_parameter("input_type").as_string();
         auto output_topic = this->get_parameter("topics.output").as_string();
