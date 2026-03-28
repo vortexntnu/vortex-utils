@@ -1,4 +1,4 @@
-euler_odometry_publisher_node:
+message_publisher_node:
   ros__parameters:
     input_type: "odometry"
     topics:
