@@ -11,7 +11,8 @@ class MessagePublisherNode : public rclcpp::Node {
    public:
     MessagePublisherNode() : Node("message_publisher_node") {
         this->declare_parameter<std::string>("input_type", "odometry");
-        this->declare_parameter<std::string>("topics.odometry", "nautilus/odom");
+        this->declare_parameter<std::string>("topics.odometry",
+                                             "nautilus/odom");
         this->declare_parameter<std::string>("topics.waypoint",
                                              "nautilus/waypoint");
         this->declare_parameter<std::string>("topics.reference_filter",
@@ -22,13 +23,16 @@ class MessagePublisherNode : public rclcpp::Node {
         auto input_type = this->get_parameter("input_type").as_string();
         auto output_topic = this->get_parameter("topics.output").as_string();
 
-        rpy_pub_ =
-            this->create_publisher<vortex_msgs::msg::RPY>(output_topic, 2);
+        rclcpp::QoS qos_profile(2);
+        qos_profile.best_effort();
+
+        rpy_pub_ = this->create_publisher<vortex_msgs::msg::RPY>(output_topic,
+                                                                 qos_profile);
 
         if (input_type == "odometry") {
             auto topic = this->get_parameter("topics.odometry").as_string();
             sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-                topic, 2,
+                topic, qos_profile,
                 std::bind(&MessagePublisherNode::odom_callback, this,
                           std::placeholders::_1));
             RCLCPP_INFO(this->get_logger(),
@@ -38,7 +42,7 @@ class MessagePublisherNode : public rclcpp::Node {
         } else if (input_type == "waypoint") {
             auto topic = this->get_parameter("topics.waypoint").as_string();
             sub_ = this->create_subscription<vortex_msgs::msg::Waypoint>(
-                topic, 2,
+                topic, qos_profile,
                 std::bind(&MessagePublisherNode::waypoint_callback, this,
                           std::placeholders::_1));
             RCLCPP_INFO(this->get_logger(),
@@ -50,7 +54,7 @@ class MessagePublisherNode : public rclcpp::Node {
                 this->get_parameter("topics.reference_filter").as_string();
             sub_ = this->create_subscription<
                 vortex_msgs::msg::ReferenceFilterQuat>(
-                topic, 2,
+                topic, qos_profile,
                 std::bind(&MessagePublisherNode::ref_filter_callback, this,
                           std::placeholders::_1));
             RCLCPP_INFO(this->get_logger(),
