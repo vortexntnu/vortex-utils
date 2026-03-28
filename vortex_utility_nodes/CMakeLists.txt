@@ -5,6 +5,7 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(vortex_msgs REQUIRED)
 find_package(vortex_utils REQUIRED)
@@ -16,6 +17,7 @@ add_executable(message_publisher_node
 
 ament_target_dependencies(message_publisher_node PUBLIC
   rclcpp
+  geometry_msgs
   nav_msgs
   Eigen3
   vortex_utils

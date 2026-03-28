@@ -1,4 +1,6 @@
 #include <vortex/utils/math.hpp>
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "vortex_msgs/msg/reference_filter_quat.hpp"
@@ -17,8 +19,11 @@ class MessagePublisherNode : public rclcpp::Node {
                                              "nautilus/waypoint");
         this->declare_parameter<std::string>("topics.reference_filter",
                                              "nautilus/reference_filter");
-        this->declare_parameter<std::string>("topics.output",
-                                             "utils/odometry/euler");
+        this->declare_parameter<std::string>("topics.pose_stamped",
+                                             "nautilus/pose_stamped");
+        this->declare_parameter<std::string>(
+            "topics.pose_with_covariance_stamped", "nautilus/pose");
+        this->declare_parameter<std::string>("topics.output", "utils/rpy");
 
         auto input_type = this->get_parameter("input_type").as_string();
         auto output_topic = this->get_parameter("topics.output").as_string();
@@ -61,11 +66,38 @@ class MessagePublisherNode : public rclcpp::Node {
                         "Euler publisher [reference_filter]: %s -> %s",
                         topic.c_str(), output_topic.c_str());
 
+        } else if (input_type == "pose_stamped") {
+            auto topic = this->get_parameter("topics.pose_stamped").as_string();
+            sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+                topic, qos_profile,
+                std::bind(&MessagePublisherNode::pose_stamped_callback, this,
+                          std::placeholders::_1));
+            RCLCPP_INFO(this->get_logger(),
+                        "Euler publisher [pose_stamped]: %s -> %s",
+                        topic.c_str(), output_topic.c_str());
+
+        } else if (input_type == "pose_with_covariance_stamped") {
+            auto topic =
+                this->get_parameter("topics.pose_with_covariance_stamped")
+                    .as_string();
+            sub_ = this->create_subscription<
+                geometry_msgs::msg::PoseWithCovarianceStamped>(
+                topic, qos_profile,
+                std::bind(&MessagePublisherNode::
+                              pose_with_covariance_stamped_callback,
+                          this, std::placeholders::_1));
+            RCLCPP_INFO(
+                this->get_logger(),
+                "Euler publisher [pose_with_covariance_stamped]: %s -> %s",
+                topic.c_str(), output_topic.c_str());
+
         } else {
-            RCLCPP_FATAL(this->get_logger(),
-                         "Unknown input_type: '%s'. Must be 'odometry', "
-                         "'waypoint', or 'reference_filter'.",
-                         input_type.c_str());
+            RCLCPP_FATAL(
+                this->get_logger(),
+                "Unknown input_type: '%s'. Must be 'odometry', 'waypoint', "
+                "'reference_filter', 'pose_stamped', or "
+                "'pose_with_covariance_stamped'.",
+                input_type.c_str());
             rclcpp::shutdown();
             return;
         }
@@ -107,10 +139,27 @@ class MessagePublisherNode : public rclcpp::Node {
         publish_rpy(msg->header, euler);
     }
 
+    void pose_stamped_callback(
+        const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+        const auto& q = msg->pose.orientation;
+        auto euler = convert_quat(q.w, q.x, q.y, q.z);
+        publish_rpy(msg->header, euler);
+    }
+
+    void pose_with_covariance_stamped_callback(
+        const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
+        const auto& q = msg->pose.pose.orientation;
+        auto euler = convert_quat(q.w, q.x, q.y, q.z);
+        publish_rpy(msg->header, euler);
+    }
+
     using SubVariant = std::variant<
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr,
         rclcpp::Subscription<vortex_msgs::msg::Waypoint>::SharedPtr,
-        rclcpp::Subscription<vortex_msgs::msg::ReferenceFilterQuat>::SharedPtr>;
+        rclcpp::Subscription<vortex_msgs::msg::ReferenceFilterQuat>::SharedPtr,
+        rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr,
+        rclcpp::Subscription<
+            geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr>;
 
     SubVariant sub_;
     rclcpp::Publisher<vortex_msgs::msg::RPY>::SharedPtr rpy_pub_;
