@@ -32,6 +32,17 @@ struct LandmarkConvergenceGoal {
 };
 
 /**
+ * @brief Convert a string to a WaypointMode enum value.
+ *
+ * Accepts both upper-case ("FULL_POSE") and lower-case ("full_pose") variants.
+ *
+ * @param str The string representation of the mode.
+ * @return The corresponding WaypointMode.
+ * @throws std::runtime_error if the string does not match any known mode.
+ */
+WaypointMode string_to_waypoint_mode(const std::string& str);
+
+/**
  * @brief Compute the waypoint goal by applying the mode logic to the incoming
  * waypoint.
  *
@@ -106,15 +117,10 @@ Pose load_pose_from_yaml(const std::string& file_path,
  * Expected YAML format:
  * @code
  * waypoint_name:
- *   position:
- *     x: 1.0
- *     y: 0.0
- *     z: -0.5
- *   orientation:
- *     roll: 0.0
- *     pitch: 0.0
- *     yaw: 3.14159
- *   mode: 0  # WaypointMode as integer (e.g. 0 for FULL_POSE)
+ *   mode: only_position  # WaypointMode as string or integer (e.g. 1 /
+ * "only_position") position:            # Required for FULL_POSE,
+ * ONLY_POSITION, FORWARD_HEADING x: 1.0 y: 0.0 z: -0.5 orientation:         #
+ * Required for FULL_POSE, ONLY_ORIENTATION roll: 0.0 pitch: 0.0 yaw: 3.14159
  *   convergence_threshold: 0.1  # Optional, default is 0.1
  * @endcode
  *
@@ -136,15 +142,15 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
  * Expected YAML format:
  * @code
  * landmark_goal_name:
- *   position:
+ *   mode: full_pose  # WaypointMode as string or integer (e.g. 0 / "full_pose")
+ *   position:        # Required for FULL_POSE, ONLY_POSITION, FORWARD_HEADING
  *     x: 0.0
  *     y: 0.0
  *     z: -0.5
- *   orientation:
+ *   orientation:     # Required for FULL_POSE, ONLY_ORIENTATION
  *     roll: 0.0
  *     pitch: 0.0
  *     yaw: 0.0
- *   mode: 0  # WaypointMode as integer (e.g. 0 for FULL_POSE)
  *   convergence_threshold: 0.1  # Optional, default is 0.1
  *   dead_reckoning_threshold: 0.5  # Optional, default is 0.5
  * @endcode

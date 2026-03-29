@@ -6,6 +6,64 @@
 
 namespace vortex::utils::waypoints {
 
+WaypointMode string_to_waypoint_mode(const std::string& str) {
+    if (str == "FULL_POSE" || str == "full_pose")
+        return WaypointMode::FULL_POSE;
+    if (str == "ONLY_POSITION" || str == "only_position")
+        return WaypointMode::ONLY_POSITION;
+    if (str == "FORWARD_HEADING" || str == "forward_heading")
+        return WaypointMode::FORWARD_HEADING;
+    if (str == "ONLY_ORIENTATION" || str == "only_orientation")
+        return WaypointMode::ONLY_ORIENTATION;
+    throw std::runtime_error("Unknown WaypointMode string: '" + str + "'");
+}
+
+namespace {
+
+WaypointMode load_mode(const YAML::Node& node) {
+    const auto& m = node["mode"];
+    if (!m) {
+        throw std::runtime_error("Missing required field 'mode'");
+    }
+    try {
+        return static_cast<WaypointMode>(m.as<uint8_t>());
+    } catch (const YAML::BadConversion&) {
+        return string_to_waypoint_mode(m.as<std::string>());
+    }
+}
+
+Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) {
+    Pose pose;  // defaults: x=y=z=0, qw=1, qx=qy=qz=0
+
+    const bool needs_position = (mode == WaypointMode::FULL_POSE ||
+                                 mode == WaypointMode::ONLY_POSITION ||
+                                 mode == WaypointMode::FORWARD_HEADING);
+    const bool needs_orientation = (mode == WaypointMode::FULL_POSE ||
+                                    mode == WaypointMode::ONLY_ORIENTATION);
+
+    if (needs_position) {
+        pose.x = node["position"]["x"].as<double>();
+        pose.y = node["position"]["y"].as<double>();
+        pose.z = node["position"]["z"].as<double>();
+    }
+
+    if (needs_orientation) {
+        const double roll = node["orientation"]["roll"].as<double>();
+        const double pitch = node["orientation"]["pitch"].as<double>();
+        const double yaw = node["orientation"]["yaw"].as<double>();
+        const Eigen::Quaterniond q =
+            vortex::utils::math::euler_to_quat(roll, pitch, yaw);
+        pose.qw = q.w();
+        pose.qx = q.x();
+        pose.qy = q.y();
+        pose.qz = q.z();
+    }
+
+    return pose;
+}
+
+}  // namespace
+
 Pose compute_waypoint_goal(const Pose& incoming_waypoint,
                            WaypointMode mode,
                            const Pose& current_state) {
@@ -118,9 +176,8 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
 
     const auto& wp = root[identifier];
 
-    Pose pose = load_pose_from_yaml(file_path, identifier);
-
-    const auto mode = static_cast<WaypointMode>(wp["mode"].as<uint8_t>());
+    const auto mode = load_mode(wp);
+    const Pose pose = load_pose_for_mode(wp, mode);
 
     double convergence_threshold = 0.1;
     if (wp["convergence_threshold"]) {
@@ -144,9 +201,8 @@ LandmarkConvergenceGoal load_landmark_goal_from_yaml(
 
     const auto& entry = root[identifier];
 
-    Pose convergence_offset = load_pose_from_yaml(file_path, identifier);
-
-    const auto mode = static_cast<WaypointMode>(entry["mode"].as<uint8_t>());
+    const auto mode = load_mode(entry);
+    const Pose convergence_offset = load_pose_for_mode(entry, mode);
 
     double convergence_threshold = 0.1;
     if (entry["convergence_threshold"]) {
