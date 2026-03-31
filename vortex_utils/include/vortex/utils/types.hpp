@@ -15,6 +15,11 @@ namespace vortex::utils::types {
 typedef Eigen::Matrix<double, 6, 1> Vector6d;
 
 /**
+ * @brief 6x1 column vector of doubles
+ */
+typedef Eigen::Matrix<double, 6, 6> Matrix6d;
+
+/**
  * @brief Struct to represent the pose vector according to eq. 2.3 in
  * Fossen, 2021, containing the position and orientation as euler angles.
  */
@@ -109,6 +114,7 @@ struct PoseEuler {
     Eigen::Matrix3d as_rotation_matrix() const {
         return vortex::utils::math::get_rotation_matrix(roll, pitch, yaw);
     }
+
     /**
      * @brief Make the transformation matrix according to eq. 2.41 in Fossen,
      * 2021
@@ -210,6 +216,10 @@ struct Pose {
         return quat.normalized();
     }
 
+    Eigen::Vector3d ori_quaternion_vector_part() const {
+        return Eigen::Vector3d{qx, qy, qz};
+    }
+
     /**
      * @brief Set the position from an Eigen::Vector3d.
      * @param pos Eigen::Vector3d
@@ -275,6 +285,21 @@ struct Pose {
     }
 
     /**
+     * @brief Make the Q, based on quaternion derivative and error state
+     * formulation.
+     * @return Eigen::Matrix3d transformation matrix
+     */
+    Eigen::Matrix3d as_Q_matrix() const {
+        Eigen::Matrix3d Diagonal = Eigen::Matrix3d::Identity() * qw;
+        const Eigen::Vector3d q_vector_part = {qx, qy, qz};
+        Eigen::Matrix3d Skewsymmetric =
+            vortex::utils::math::get_skew_symmetric_matrix(q_vector_part);
+
+        Eigen::Matrix3d Q_matrix = Diagonal + Skewsymmetric;
+        return Q_matrix;
+    }
+
+    /**
      * @brief Make the J matrix according to eq. 2.83 in Fossen, 2021
      * @return Eigen::Matrix<double, 7, 6> J matrix
      */
@@ -289,6 +314,21 @@ struct Pose {
 
         return j_matrix;
     }
+
+    /**
+     * @brief Make the J matrix according to eq. 2.83 in Fossen, 2021
+     * @return Eigen::Matrix<double, 7, 6> J matrix
+     */
+    Matrix6d as_L_matrix() const {
+        Eigen::Matrix3d R = as_rotation_matrix();
+        Eigen::Matrix3d Q = as_Q_matrix();
+
+        Matrix6d L_matrix = Matrix6d::Zero();
+        L_matrix.topLeftCorner<3, 3>() = R;
+        L_matrix.bottomRightCorner<3, 3>() = Q;
+        return L_matrix;
+    }
+
     /**
      * @brief Convert to PoseEuler with Euler angles
      * @return PoseEuler
