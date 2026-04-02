@@ -14,13 +14,6 @@ def generate_launch_description():
         'message_publisher.yaml',
     )
 
-    input_type_arg = DeclareLaunchArgument(
-        'input_type',
-        default_value='odometry',
-        description='Input message type: odometry, waypoint, reference_filter, '
-        'pose_stamped, or pose_with_covariance_stamped',
-    )
-
     namespace_arg = DeclareLaunchArgument(
         'namespace',
         default_value='',
@@ -29,17 +22,13 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            input_type_arg,
             namespace_arg,
             Node(
                 package='vortex_utility_nodes',
                 executable='message_publisher_node',
                 name='message_publisher_node',
                 namespace=LaunchConfiguration('namespace'),
-                parameters=[
-                    config,
-                    {'input_type': LaunchConfiguration('input_type')},
-                ],
+                parameters=[config],
                 output='screen',
             ),
         ]
