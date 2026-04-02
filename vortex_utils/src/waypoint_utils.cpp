@@ -159,11 +159,17 @@ LandmarkConvergenceGoal load_landmark_goal_from_yaml(
             entry["dead_reckoning_threshold"].as<double>();
     }
 
+    double track_loss_timeout_sec = 10.0;
+    if (entry["track_loss_timeout_sec"]) {
+        track_loss_timeout_sec = entry["track_loss_timeout_sec"].as<double>();
+    }
+
     return LandmarkConvergenceGoal{
         .convergence_offset = convergence_offset,
         .mode = mode,
         .convergence_threshold = convergence_threshold,
-        .dead_reckoning_threshold = dead_reckoning_threshold};
+        .dead_reckoning_threshold = dead_reckoning_threshold,
+        .track_loss_timeout_sec = track_loss_timeout_sec};
 }
 
 }  // namespace vortex::utils::waypoints

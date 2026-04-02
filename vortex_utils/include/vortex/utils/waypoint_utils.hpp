@@ -29,6 +29,7 @@ struct LandmarkConvergenceGoal {
     WaypointMode mode;
     double convergence_threshold{0.1};
     double dead_reckoning_threshold{0.5};
+    double track_loss_timeout_sec{10.0};
 };
 
 /**
