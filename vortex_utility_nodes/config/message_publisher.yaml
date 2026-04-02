@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    input_type: "reference_filter"
+    output_namespace: ""
+    topics:
+      odometry: "/nautilus/odom"
+      waypoint: "/nautilus/waypoint"
+      reference_filter: "/nautilus/guidance/dp_quat"
+      pose_stamped: "/nautilus/pose_stamped"
+      pose_with_covariance_stamped: "/nautilus/pose"
+      output: "utils/message_publisher"
