@@ -7,7 +7,7 @@ These are standalone helper nodes not core pipeline components. Use them to insp
 
 | Node | Description |
 |------|-------------|
-| `euler_odometry_publisher_node` | Subscribes to `odometry` (resolved from config) and publishes odometry pose in Euler angles (roll, pitch, yaw). |
+| `message_publisher` | Subscribes to `odometry` (resolved from config) and publishes odometry pose in Euler angles (x, y, z, roll, pitch, yaw). |
 
 ## Build
 ```bash
@@ -17,7 +17,7 @@ source install/setup.bash
 
 ## Run
 ```bash
-ros2 launch vortex_utility_nodes euler_odometry_publisher_node.launch.py
+ros2 launch vortex_utility_nodes message_publisher.launch.py
 ```
 
 ## Adding New Nodes

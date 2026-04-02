@@ -169,7 +169,7 @@ class MessagePublisherNode : public rclcpp::Node {
     void imu_callback(const sensor_msgs::msg::Imu::SharedPtr msg) {
         const auto& q = msg->orientation;
         auto euler = convert_quat(q.w, q.x, q.y, q.z);
-        publish_rpy(msg->header, euler);
+        publish_pose(msg->header, 0.0, 0.0, 0.0, euler);
     }
 
     using SubVariant = std::variant<
