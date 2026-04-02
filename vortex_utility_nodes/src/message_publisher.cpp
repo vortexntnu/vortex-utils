@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #include <variant>
+=======
+#include <sensor_msgs/msg/imu.hpp>
+>>>>>>> dc9022e340e1d7a4463d4c98418414acf5cd63b6
 #include <vortex/utils/math.hpp>
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
@@ -18,6 +22,7 @@ class MessagePublisherNode : public rclcpp::Node {
         this->declare_parameter<std::string>("topics.pose_stamped");
         this->declare_parameter<std::string>(
             "topics.pose_with_covariance_stamped");
+        this->declare_parameter<std::string>("topics.imu");
         this->declare_parameter<std::string>("topics.output");
 
         auto input_type = this->get_parameter("input_type").as_string();
@@ -81,6 +86,16 @@ class MessagePublisherNode : public rclcpp::Node {
                 this->get_logger(),
                 "Pose publisher [pose_with_covariance_stamped]: %s -> %s",
                 topic.c_str(), output_topic.c_str());
+
+        } else if (input_type == "imu") {
+            auto topic = this->get_parameter("topics.imu").as_string();
+            sub_ = this->create_subscription<sensor_msgs::msg::Imu>(
+                topic, qos_profile,
+                std::bind(&MessagePublisherNode::imu_callback, this,
+                          std::placeholders::_1));
+            RCLCPP_INFO(this->get_logger(), "Euler publisher [imu]: %s -> %s",
+                        topic.c_str(), output_topic.c_str());
+
         } else {
             RCLCPP_FATAL(
                 this->get_logger(),
@@ -154,13 +169,20 @@ class MessagePublisherNode : public rclcpp::Node {
         publish_pose(msg->header, pos.x, pos.y, pos.z, euler);
     }
 
+    void imu_callback(const sensor_msgs::msg::Imu::SharedPtr msg) {
+        const auto& q = msg->orientation;
+        auto euler = convert_quat(q.w, q.x, q.y, q.z);
+        publish_rpy(msg->header, euler);
+    }
+
     using SubVariant = std::variant<
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr,
         rclcpp::Subscription<vortex_msgs::msg::Waypoint>::SharedPtr,
         rclcpp::Subscription<vortex_msgs::msg::ReferenceFilterQuat>::SharedPtr,
         rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr,
         rclcpp::Subscription<
-            geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr>;
+            geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr,
+        rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr>;
 
     SubVariant sub_;
     rclcpp::Publisher<vortex_msgs::msg::PoseEulerStamped>::SharedPtr pose_pub_;

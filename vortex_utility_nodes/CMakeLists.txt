@@ -10,6 +10,7 @@ find_package(nav_msgs REQUIRED)
 find_package(vortex_msgs REQUIRED)
 find_package(vortex_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_executable(message_publisher_node
   src/message_publisher.cpp
@@ -22,6 +23,8 @@ ament_target_dependencies(message_publisher_node PUBLIC
   Eigen3
   vortex_utils
   vortex_msgs
+  sensor_msgs
+
 )
 
 install(TARGETS message_publisher_node
