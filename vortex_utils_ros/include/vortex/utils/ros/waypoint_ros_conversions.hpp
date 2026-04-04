@@ -32,6 +32,29 @@ inline WaypointMode waypoint_mode_from_ros(
 }
 
 /**
+ * @brief Convert a WaypointMode enum to a ROS waypoint mode message.
+ */
+inline vortex_msgs::msg::WaypointMode waypoint_mode_to_ros(
+    const WaypointMode& mode_msg) {
+    vortex_msgs::msg::WaypointMode ros_mode;
+    switch (mode_msg) {
+        case WaypointMode::FULL_POSE:
+            ros_mode.mode = vortex_msgs::msg::WaypointMode::FULL_POSE;
+            break;
+        case WaypointMode::ONLY_POSITION:
+            ros_mode.mode = vortex_msgs::msg::WaypointMode::ONLY_POSITION;
+            break;
+        case WaypointMode::FORWARD_HEADING:
+            ros_mode.mode = vortex_msgs::msg::WaypointMode::FORWARD_HEADING;
+            break;
+        case WaypointMode::ONLY_ORIENTATION:
+            ros_mode.mode = vortex_msgs::msg::WaypointMode::ONLY_ORIENTATION;
+            break;
+    }
+    return ros_mode;
+}
+
+/**
  * @brief Convert a ROS Waypoint message to an internal Waypoint struct.
  */
 inline vortex::utils::types::Waypoint waypoint_from_ros(
