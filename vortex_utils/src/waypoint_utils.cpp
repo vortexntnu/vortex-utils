@@ -32,7 +32,7 @@ WaypointMode load_mode(const YAML::Node& node) {
     }
 }
 
-Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) {
+Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) { //
     Pose pose;  // defaults: x=y=z=0, qw=1, qx=qy=qz=0
 
     const bool needs_position = (mode == WaypointMode::FULL_POSE ||
@@ -48,9 +48,12 @@ Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) {
     }
 
     if (needs_orientation) {
-        const double roll = node["orientation"]["roll"].as<double>();
-        const double pitch = node["orientation"]["pitch"].as<double>();
-        const double yaw = node["orientation"]["yaw"].as<double>();
+        const double roll =
+            node["orientation"]["roll"].as<double>() * (M_PI / 180.0);
+        const double pitch =
+            node["orientation"]["pitch"].as<double>() * (M_PI / 180.0);
+        const double yaw =
+            node["orientation"]["yaw"].as<double>() * (M_PI / 180.0);
         const Eigen::Quaterniond q =
             vortex::utils::math::euler_to_quat(roll, pitch, yaw);
         pose.qw = q.w();
@@ -135,7 +138,7 @@ Pose apply_pose_offset(const Pose& base, const Pose& offset) {
 }
 
 Pose load_pose_from_yaml(const std::string& file_path,
-                         const std::string& identifier) {
+                         const std::string& identifier) { //
     YAML::Node root = YAML::LoadFile(file_path);
 
     if (!root[identifier]) {
@@ -149,9 +152,12 @@ Pose load_pose_from_yaml(const std::string& file_path,
     const double y = pose["position"]["y"].as<double>();
     const double z = pose["position"]["z"].as<double>();
 
-    const double roll = pose["orientation"]["roll"].as<double>();
-    const double pitch = pose["orientation"]["pitch"].as<double>();
-    const double yaw = pose["orientation"]["yaw"].as<double>();
+    const double roll = pose["orientation"]["roll"].as<double>() *
+                        (M_PI / 180.0);
+    const double pitch = pose["orientation"]["pitch"].as<double>() *
+                         (M_PI / 180.0);
+    const double yaw = pose["orientation"]["yaw"].as<double>() *
+                       (M_PI / 180.0);
 
     const Eigen::Quaterniond q =
         vortex::utils::math::euler_to_quat(roll, pitch, yaw);
