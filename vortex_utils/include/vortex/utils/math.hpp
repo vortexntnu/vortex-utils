@@ -113,6 +113,22 @@ Eigen::Quaterniond euler_to_quat(const double roll,
 Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler);
 
 /**
+ * @brief Compute the error quaternion from one orientation to another.
+ *
+ * Returns q_err = q_from^{-1} * q_to, normalised and with the shortest-path
+ * sign convention applied (q_err.w >= 0).  The result is the full unit
+ * quaternion, so callers that need eps_e = q_err.vec() and qw_e = q_err.w()
+ * separately (e.g. for building an error-state Jacobian) can do so without
+ * repeating the sign-flip logic.
+ *
+ * @param q_from Start orientation (e.g. desired).
+ * @param q_to   End orientation (e.g. measured).
+ * @return Unit quaternion representing the rotation from q_from to q_to.
+ */
+Eigen::Quaterniond error_quaternion(const Eigen::Quaterniond& q_from,
+                                    const Eigen::Quaterniond& q_to);
+
+/**
  * @brief Compute the 3D orientation error between two quaternions.
  *
  * Computes the rotation from @p q_from to @p q_to and returns the

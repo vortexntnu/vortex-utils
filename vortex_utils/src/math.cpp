@@ -103,15 +103,23 @@ Eigen::Quaterniond euler_to_quat(const Eigen::Vector3d& euler) {
     return q.normalized();
 }
 
+Eigen::Quaterniond error_quaternion(const Eigen::Quaterniond& q_from,
+                                    const Eigen::Quaterniond& q_to) {
+    Eigen::Quaterniond q_err = q_from.conjugate() * q_to;
+    q_err.normalize();
+    if (q_err.w() < 0.0) {
+        q_err.coeffs() = -q_err.coeffs();
+    }
+    return q_err;
+}
+
 Eigen::Vector3d quaternion_error(const Eigen::Quaterniond& q_from,
                                  const Eigen::Quaterniond& q_to) {
     Eigen::Quaterniond q_err = q_from.conjugate() * q_to;
     q_err.normalize();
-
     if (q_err.w() < 0.0) {
         q_err.coeffs() = -q_err.coeffs();
     }
-
     return 2.0 * q_err.vec();
 }
 

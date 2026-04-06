@@ -1,5 +1,5 @@
-#include <variant>
 #include <sensor_msgs/msg/imu.hpp>
+#include <variant>
 #include <vortex/utils/math.hpp>
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
