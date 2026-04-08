@@ -16,6 +16,8 @@
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
 #include <vortex_msgs/msg/landmark_array.hpp>
 #include <vortex_msgs/msg/operation_mode.hpp>
+#include <vortex_msgs/msg/reference_filter.hpp>
+#include <vortex_msgs/msg/reference_filter_quat.hpp>
 
 #include <vortex/utils/concepts.hpp>
 #include <vortex/utils/math.hpp>
@@ -283,6 +285,43 @@ inline vortex_msgs::msg::OperationMode convert_to_ros(
             return mode_msg;
     }
     throw std::runtime_error("Conversion failed, invalid operation mode value");
+}
+
+/**
+ * @brief Converts a ROS vortex_msgs::msg::ReferenceFilter to an internal
+ * PoseEuler type.
+ * @param msg vortex_msgs::msg::ReferenceFilter
+ * @return vortex::utils::types::PoseEuler Internal pose representation
+ */
+inline vortex::utils::types::PoseEuler reference_filter_to_pose_euler(
+    const vortex_msgs::msg::ReferenceFilter& msg) {
+    return vortex::utils::types::PoseEuler{
+        .x = msg.x,
+        .y = msg.y,
+        .z = msg.z,
+        .roll = msg.roll,
+        .pitch = msg.pitch,
+        .yaw = msg.yaw,
+    };
+}
+
+/**
+ * @brief Converts a ROS vortex_msgs::msg::ReferenceFilterQuat to an internal
+ * Pose type.
+ * @param msg vortex_msgs::msg::ReferenceFilterQuat
+ * @return vortex::utils::types::Pose Internal pose representation
+ */
+inline vortex::utils::types::Pose reference_filter_quat_to_pose(
+    const vortex_msgs::msg::ReferenceFilterQuat& msg) {
+    return vortex::utils::types::Pose{
+        .x = msg.x,
+        .y = msg.y,
+        .z = msg.z,
+        .qw = msg.qw,
+        .qx = msg.qx,
+        .qy = msg.qy,
+        .qz = msg.qz,
+    };
 }
 
 }  // namespace vortex::utils::ros_conversions
