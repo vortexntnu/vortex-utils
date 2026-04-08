@@ -196,6 +196,43 @@ Eigen::Quaterniond average_quaternions(
  */
 Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat);
 
+/**
+ * @brief Builds the 6×n thrust configuration matrix T for a set of thrusters.
+ * As outlined in Fossen, 2021
+ *
+ * Column i maps thruster i's scalar force to a 6-DOF body-frame wrench:
+ * rows 0-2 are the force direction, rows 3-5 are the moment (r × F) about the
+ * centre of mass.
+ *
+ * @param thruster_force_direction 3×n matrix; each column is a unit force
+ *        direction vector in body frame.
+ * @param thruster_position        3×n matrix; each column is the thruster
+ *        position in body frame.
+ * @param center_of_mass           Centre-of-mass position in body frame.
+ * @return 6×n thrust configuration matrix T.
+ */
+Eigen::MatrixXd build_thrust_configuration_matrix(
+    const Eigen::MatrixXd& thruster_force_direction,
+    const Eigen::MatrixXd& thruster_position,
+    const Eigen::Vector3d& center_of_mass);
+
+/**
+ * @brief Approximates the bounding box of the valid thrust region
+ * polyhedron { T*u : u_min ≤ u ≤ u_max } using a greedy method.
+ *
+ * For each DOF i, greedily selects the thruster contribution that maximises
+ * the wrench in that DOF, giving the per-DOF maximum achievable wrench.
+ *
+ * @param T     6×n thrust configuration matrix.
+ * @param u_min Per-thruster minimum force vector (length n).
+ * @param u_max Per-thruster maximum force vector (length n).
+ * @return Vector of length T.rows() with the maximum wrench per DOF.
+ */
+Eigen::VectorXd calculate_valid_thrust_region_polyhedron(
+    const Eigen::MatrixXd& T,
+    const Eigen::VectorXd& u_min,
+    const Eigen::VectorXd& u_max);
+
 }  // namespace vortex::utils::math
 
 #endif  // VORTEX_UTILS_MATH_HPP
