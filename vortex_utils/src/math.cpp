@@ -209,4 +209,34 @@ Eigen::Quaterniond enu_ned_rotation(const Eigen::Quaterniond& quat) {
     return q_out.normalized();
 }
 
+Eigen::MatrixXd build_thrust_configuration_matrix(
+    const Eigen::MatrixXd& thruster_force_direction,
+    const Eigen::MatrixXd& thruster_position,
+    const Eigen::Vector3d& center_of_mass) {
+    const int n = thruster_force_direction.cols();
+    Eigen::MatrixXd T = Eigen::MatrixXd::Zero(6, n);
+    for (int i = 0; i < n; i++) {
+        const Eigen::Vector3d F = thruster_force_direction.col(i);
+        const Eigen::Vector3d pos = thruster_position.col(i) - center_of_mass;
+        T.block<3, 1>(0, i) = F;
+        T.block<3, 1>(3, i) = pos.cross(F);
+    }
+    return T;
+}
+
+Eigen::VectorXd calculate_valid_thrust_region_polyhedron(
+    const Eigen::MatrixXd& T,
+    const Eigen::VectorXd& u_min,
+    const Eigen::VectorXd& u_max) {
+    Eigen::VectorXd tau_max(T.rows());
+    for (int i = 0; i < T.rows(); i++) {
+        double w = 0.0;
+        for (int j = 0; j < T.cols(); j++) {
+            w += (T(i, j) > 0) ? T(i, j) * u_max(j) : T(i, j) * u_min(j);
+        }
+        tau_max(i) = w;
+    }
+    return tau_max;
+}
+
 }  // namespace vortex::utils::math
