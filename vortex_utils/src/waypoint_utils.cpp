@@ -15,6 +15,10 @@ WaypointMode string_to_waypoint_mode(const std::string& str) {
         return WaypointMode::FORWARD_HEADING;
     if (str == "ONLY_ORIENTATION" || str == "only_orientation")
         return WaypointMode::ONLY_ORIENTATION;
+    if (str == "POSITION_AND_YAW" || str == "position_and_yaw")
+        return WaypointMode::POSITION_AND_YAW;
+    if (str == "XY_AND_YAW" || str == "xy_and_yaw")
+        return WaypointMode::XY_AND_YAW;
     throw std::runtime_error("Unknown WaypointMode string: '" + str + "'");
 }
 
@@ -32,14 +36,18 @@ WaypointMode load_mode(const YAML::Node& node) {
     }
 }
 
-Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) { //
+Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) {  //
     Pose pose;  // defaults: x=y=z=0, qw=1, qx=qy=qz=0
 
     const bool needs_position = (mode == WaypointMode::FULL_POSE ||
                                  mode == WaypointMode::ONLY_POSITION ||
-                                 mode == WaypointMode::FORWARD_HEADING);
+                                 mode == WaypointMode::FORWARD_HEADING ||
+                                 mode == WaypointMode::POSITION_AND_YAW ||
+                                 mode == WaypointMode::XY_AND_YAW);
     const bool needs_orientation = (mode == WaypointMode::FULL_POSE ||
-                                    mode == WaypointMode::ONLY_ORIENTATION);
+                                    mode == WaypointMode::ONLY_ORIENTATION ||
+                                    mode == WaypointMode::POSITION_AND_YAW ||
+                                    mode == WaypointMode::XY_AND_YAW);
 
     if (needs_position) {
         pose.x = node["position"]["x"].as<double>();
@@ -48,10 +56,16 @@ Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) { //
     }
 
     if (needs_orientation) {
+        const bool force_level = (mode == WaypointMode::POSITION_AND_YAW ||
+                                  mode == WaypointMode::XY_AND_YAW);
         const double roll =
-            node["orientation"]["roll"].as<double>() * (M_PI / 180.0);
+            force_level
+                ? 0.0
+                : node["orientation"]["roll"].as<double>() * (M_PI / 180.0);
         const double pitch =
-            node["orientation"]["pitch"].as<double>() * (M_PI / 180.0);
+            force_level
+                ? 0.0
+                : node["orientation"]["pitch"].as<double>() * (M_PI / 180.0);
         const double yaw =
             node["orientation"]["yaw"].as<double>() * (M_PI / 180.0);
         const Eigen::Quaterniond q =
@@ -93,6 +107,31 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
         case WaypointMode::ONLY_ORIENTATION:
             waypoint_out.set_pos(current_state.pos_vector());
             break;
+
+        case WaypointMode::POSITION_AND_YAW: {
+            const double raw_yaw = vortex::utils::math::quat_to_euler(
+                incoming_waypoint.ori_quaternion())(2);
+            const double current_yaw = vortex::utils::math::quat_to_euler(
+                current_state.ori_quaternion())(2);
+            const double yaw =
+                current_yaw + vortex::utils::math::ssa(raw_yaw - current_yaw);
+            waypoint_out.set_ori(Eigen::Quaterniond(
+                Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())));
+            break;
+        }
+
+        case WaypointMode::XY_AND_YAW: {
+            waypoint_out.z = current_state.z;
+            const double raw_yaw = vortex::utils::math::quat_to_euler(
+                incoming_waypoint.ori_quaternion())(2);
+            const double current_yaw = vortex::utils::math::quat_to_euler(
+                current_state.ori_quaternion())(2);
+            const double yaw =
+                current_yaw + vortex::utils::math::ssa(raw_yaw - current_yaw);
+            waypoint_out.set_ori(Eigen::Quaterniond(
+                Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())));
+            break;
+        }
     }
 
     return waypoint_out;
@@ -115,6 +154,10 @@ bool has_converged(const Pose& state,
                 return ea.norm();
             case WaypointMode::FORWARD_HEADING:
                 return std::sqrt(ep.squaredNorm() + ea(2) * ea(2));
+            case WaypointMode::POSITION_AND_YAW:
+                return std::sqrt(ep.squaredNorm() + ea(2) * ea(2));
+            case WaypointMode::XY_AND_YAW:
+                return std::sqrt(ep.head<2>().squaredNorm() + ea(2) * ea(2));
             case WaypointMode::FULL_POSE:
             default:
                 return std::sqrt(ep.squaredNorm() + ea.squaredNorm());
@@ -138,7 +181,7 @@ Pose apply_pose_offset(const Pose& base, const Pose& offset) {
 }
 
 Pose load_pose_from_yaml(const std::string& file_path,
-                         const std::string& identifier) { //
+                         const std::string& identifier) {  //
     YAML::Node root = YAML::LoadFile(file_path);
 
     if (!root[identifier]) {
@@ -152,12 +195,11 @@ Pose load_pose_from_yaml(const std::string& file_path,
     const double y = pose["position"]["y"].as<double>();
     const double z = pose["position"]["z"].as<double>();
 
-    const double roll = pose["orientation"]["roll"].as<double>() *
-                        (M_PI / 180.0);
-    const double pitch = pose["orientation"]["pitch"].as<double>() *
-                         (M_PI / 180.0);
-    const double yaw = pose["orientation"]["yaw"].as<double>() *
-                       (M_PI / 180.0);
+    const double roll =
+        pose["orientation"]["roll"].as<double>() * (M_PI / 180.0);
+    const double pitch =
+        pose["orientation"]["pitch"].as<double>() * (M_PI / 180.0);
+    const double yaw = pose["orientation"]["yaw"].as<double>() * (M_PI / 180.0);
 
     const Eigen::Quaterniond q =
         vortex::utils::math::euler_to_quat(roll, pitch, yaw);
