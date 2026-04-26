@@ -24,13 +24,33 @@ WaypointMode string_to_waypoint_mode(const std::string& str) {
 
 namespace {
 
+WaypointMode int_to_waypoint_mode(int value) {
+    switch (value) {
+        case static_cast<int>(WaypointMode::FULL_POSE):
+            return WaypointMode::FULL_POSE;
+        case static_cast<int>(WaypointMode::ONLY_POSITION):
+            return WaypointMode::ONLY_POSITION;
+        case static_cast<int>(WaypointMode::FORWARD_HEADING):
+            return WaypointMode::FORWARD_HEADING;
+        case static_cast<int>(WaypointMode::ONLY_ORIENTATION):
+            return WaypointMode::ONLY_ORIENTATION;
+        case static_cast<int>(WaypointMode::POSITION_AND_YAW):
+            return WaypointMode::POSITION_AND_YAW;
+        case static_cast<int>(WaypointMode::XY_AND_YAW):
+            return WaypointMode::XY_AND_YAW;
+        default:
+            throw std::runtime_error("Unknown WaypointMode numeric value: " +
+                                     std::to_string(value));
+    }
+}
+
 WaypointMode load_mode(const YAML::Node& node) {
-    const auto& m = node["mode"];
+    const auto m = node["mode"];
     if (!m) {
         throw std::runtime_error("Missing required field 'mode'");
     }
     try {
-        return static_cast<WaypointMode>(m.as<uint8_t>());
+        return int_to_waypoint_mode(m.as<int>());
     } catch (const YAML::BadConversion&) {
         return string_to_waypoint_mode(m.as<std::string>());
     }
