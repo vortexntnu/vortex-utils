@@ -19,6 +19,8 @@ WaypointMode string_to_waypoint_mode(const std::string& str) {
         return WaypointMode::POSITION_AND_YAW;
     if (str == "XY_AND_YAW" || str == "xy_and_yaw")
         return WaypointMode::XY_AND_YAW;
+    if (str == "XY_FORWARD_DIR" || str == "xy_forward_dir")
+        return WaypointMode::XY_FORWARD_DIR;
     throw std::runtime_error("Unknown WaypointMode string: '" + str + "'");
 }
 
@@ -38,6 +40,8 @@ WaypointMode int_to_waypoint_mode(int value) {
             return WaypointMode::POSITION_AND_YAW;
         case static_cast<int>(WaypointMode::XY_AND_YAW):
             return WaypointMode::XY_AND_YAW;
+        case static_cast<int>(WaypointMode::XY_FORWARD_DIR):
+            return WaypointMode::XY_FORWARD_DIR;
         default:
             throw std::runtime_error("Unknown WaypointMode numeric value: " +
                                      std::to_string(value));
@@ -63,7 +67,8 @@ Pose load_pose_for_mode(const YAML::Node& node, WaypointMode mode) {  //
                                  mode == WaypointMode::ONLY_POSITION ||
                                  mode == WaypointMode::FORWARD_HEADING ||
                                  mode == WaypointMode::POSITION_AND_YAW ||
-                                 mode == WaypointMode::XY_AND_YAW);
+                                 mode == WaypointMode::XY_AND_YAW ||
+                                 mode == WaypointMode::XY_FORWARD_DIR);
     const bool needs_orientation = (mode == WaypointMode::FULL_POSE ||
                                     mode == WaypointMode::ONLY_ORIENTATION ||
                                     mode == WaypointMode::POSITION_AND_YAW ||
@@ -152,6 +157,16 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
                 Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())));
             break;
         }
+
+        case WaypointMode::XY_FORWARD_DIR: {
+            waypoint_out.z = current_state.z;
+            const double dx = incoming_waypoint.x - current_state.x;
+            const double dy = incoming_waypoint.y - current_state.y;
+            const double forward_heading = std::atan2(dy, dx);
+            waypoint_out.set_ori(Eigen::Quaterniond(
+                Eigen::AngleAxisd(forward_heading, Eigen::Vector3d::UnitZ())));
+            break;
+        }
     }
 
     return waypoint_out;
@@ -178,6 +193,8 @@ bool has_converged(const Pose& state,
                 return std::sqrt(ep.squaredNorm() + ea(2) * ea(2));
             case WaypointMode::XY_AND_YAW:
                 return std::sqrt(ep.head<2>().squaredNorm() + ea(2) * ea(2));
+            case WaypointMode::XY_FORWARD_DIR:
+                return ep.head<2>().norm();
             case WaypointMode::FULL_POSE:
             default:
                 return std::sqrt(ep.squaredNorm() + ea.squaredNorm());
