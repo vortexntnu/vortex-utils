@@ -1,0 +1,6 @@
+/**:
+  rpy_publisher_node:
+    ros__parameters:
+      input_topics: ["nucleus/odom_relative", "eskf/odom"]
+      output_topics: ["nucleus/odom_relative/rpy", "eskf/odom/rpy"]
+      input_types:  ["odometry",               "odometry"]

@@ -11,23 +11,34 @@ find_package(vortex_msgs REQUIRED)
 find_package(vortex_utils REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
-add_executable(message_publisher_node
-  src/message_publisher.cpp
+add_executable(rpy_publisher_node
+  src/rpy_publisher.cpp
 )
 
-ament_target_dependencies(message_publisher_node PUBLIC
+ament_target_dependencies(rpy_publisher_node PUBLIC
   rclcpp
   geometry_msgs
   nav_msgs
-  Eigen3
+  sensor_msgs
   vortex_utils
   vortex_msgs
-  sensor_msgs
-
 )
 
-install(TARGETS message_publisher_node
+target_link_libraries(rpy_publisher_node PUBLIC Eigen3::Eigen)
+
+add_executable(pressure_to_depth_node
+  src/pressure_to_depth.cpp
+)
+
+ament_target_dependencies(pressure_to_depth_node PUBLIC
+  rclcpp
+  sensor_msgs
+  tf2_ros
+)
+
+install(TARGETS rpy_publisher_node pressure_to_depth_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
