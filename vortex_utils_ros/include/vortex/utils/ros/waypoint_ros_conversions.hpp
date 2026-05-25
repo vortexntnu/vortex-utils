@@ -77,6 +77,8 @@ inline vortex::utils::types::Waypoint waypoint_from_ros(
     vortex::utils::types::Waypoint wp;
     wp.pose = vortex::utils::ros_conversions::ros_pose_to_pose(ros_wp.pose);
     wp.mode = waypoint_mode_from_ros(ros_wp.waypoint_mode);
+    wp.keep_altitude = ros_wp.keep_altitude;
+    wp.desired_altitude = ros_wp.desired_altitude;
     return wp;
 }
 
