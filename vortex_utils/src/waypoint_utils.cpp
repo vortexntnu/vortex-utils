@@ -269,9 +269,25 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
         convergence_threshold = wp["convergence_threshold"].as<double>();
     }
 
+    bool keep_altitude = false;
+    double desired_altitude = 0.0;
+    if (wp["keep_altitude"]) {
+        keep_altitude = wp["keep_altitude"].as<bool>();
+    }
+    if (keep_altitude) {
+        if (!wp["desired_altitude"]) {
+            throw std::runtime_error("Waypoint '" + identifier +
+                                     "' has keep_altitude=true but is missing "
+                                     "required field 'desired_altitude'");
+        }
+        desired_altitude = wp["desired_altitude"].as<double>();
+    }
+
     return WaypointGoal{.pose = pose,
                         .mode = mode,
-                        .convergence_threshold = convergence_threshold};
+                        .convergence_threshold = convergence_threshold,
+                        .keep_altitude = keep_altitude,
+                        .desired_altitude = desired_altitude};
 }
 
 LandmarkConvergenceGoal load_landmark_goal_from_yaml(
