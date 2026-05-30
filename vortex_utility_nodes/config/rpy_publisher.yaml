@@ -1,0 +1,7 @@
+/**:
+  rpy_publisher_node:
+    ros__parameters:
+      input_topics: ["odom", "guidance/dp_quat", "guidance/dp_quat_target_pose"]
+      output_topics: ["odom/rpy", "guidance/dp_rpy", "guidance/dp_rpy_target_pose"]
+      input_types:  ["odometry", "reference_filter", "pose_stamped"]
+      # valid input types: "odometry", "pose_stamped", "pose_with_covariance_stamped", "waypoint", "reference_filter", "imu"
