@@ -31,6 +31,10 @@ inline WaypointMode waypoint_mode_from_ros(
             return WaypointMode::XY_AND_YAW;
         case vortex_msgs::msg::WaypointMode::XY_FORWARD_DIR:
             return WaypointMode::XY_FORWARD_DIR;
+        case vortex_msgs::msg::WaypointMode::LEVEL_ORIENTATION:
+            return WaypointMode::LEVEL_ORIENTATION;
+        case vortex_msgs::msg::WaypointMode::ONLY_Z:
+            return WaypointMode::ONLY_Z;
         default:
             throw std::invalid_argument("Invalid ROS waypoint mode: " +
                                         std::to_string(mode_msg.mode));
@@ -65,6 +69,12 @@ inline vortex_msgs::msg::WaypointMode waypoint_mode_to_ros(
         case WaypointMode::XY_FORWARD_DIR:
             ros_mode.mode = vortex_msgs::msg::WaypointMode::XY_FORWARD_DIR;
             break;
+        case WaypointMode::LEVEL_ORIENTATION:
+            ros_mode.mode = vortex_msgs::msg::WaypointMode::LEVEL_ORIENTATION;
+            break;
+        case WaypointMode::ONLY_Z:
+            ros_mode.mode = vortex_msgs::msg::WaypointMode::ONLY_Z;
+            break;
     }
     return ros_mode;
 }
@@ -79,6 +89,7 @@ inline vortex::utils::types::Waypoint waypoint_from_ros(
     wp.mode = waypoint_mode_from_ros(ros_wp.waypoint_mode);
     wp.keep_altitude = ros_wp.keep_altitude;
     wp.desired_altitude = ros_wp.desired_altitude;
+    wp.require_altitude_convergence = ros_wp.require_altitude_convergence;
     return wp;
 }
 

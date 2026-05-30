@@ -19,6 +19,7 @@ struct WaypointGoal {
     double convergence_threshold{0.1};
     bool keep_altitude{false};
     double desired_altitude{0.0};
+    bool require_altitude_convergence{false};
 };
 
 /**

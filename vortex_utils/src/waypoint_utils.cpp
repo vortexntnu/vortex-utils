@@ -21,6 +21,10 @@ WaypointMode string_to_waypoint_mode(const std::string& str) {
         return WaypointMode::XY_AND_YAW;
     if (str == "XY_FORWARD_DIR" || str == "xy_forward_dir")
         return WaypointMode::XY_FORWARD_DIR;
+    if (str == "LEVEL_ORIENTATION" || str == "level_orientation")
+        return WaypointMode::LEVEL_ORIENTATION;
+    if (str == "ONLY_Z" || str == "only_z")
+        return WaypointMode::ONLY_Z;
     throw std::runtime_error("Unknown WaypointMode string: '" + str + "'");
 }
 
@@ -42,6 +46,10 @@ WaypointMode int_to_waypoint_mode(int value) {
             return WaypointMode::XY_AND_YAW;
         case static_cast<int>(WaypointMode::XY_FORWARD_DIR):
             return WaypointMode::XY_FORWARD_DIR;
+        case static_cast<int>(WaypointMode::LEVEL_ORIENTATION):
+            return WaypointMode::LEVEL_ORIENTATION;
+        case static_cast<int>(WaypointMode::ONLY_Z):
+            return WaypointMode::ONLY_Z;
         default:
             throw std::runtime_error("Unknown WaypointMode numeric value: " +
                                      std::to_string(value));
@@ -167,6 +175,21 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
                 Eigen::AngleAxisd(forward_heading, Eigen::Vector3d::UnitZ())));
             break;
         }
+
+        case WaypointMode::LEVEL_ORIENTATION: {
+            waypoint_out.set_pos(current_state.pos_vector());
+            const double current_yaw = vortex::utils::math::quat_to_euler(
+                current_state.ori_quaternion())(2);
+            waypoint_out.set_ori(Eigen::Quaterniond(
+                Eigen::AngleAxisd(current_yaw, Eigen::Vector3d::UnitZ())));
+            break;
+        }
+
+        case WaypointMode::ONLY_Z:
+            waypoint_out.x = current_state.x;
+            waypoint_out.y = current_state.y;
+            waypoint_out.set_ori(current_state.ori_quaternion());
+            break;
     }
 
     return waypoint_out;
@@ -195,6 +218,10 @@ bool has_converged(const Pose& state,
                 return std::sqrt(ep.head<2>().squaredNorm() + ea(2) * ea(2));
             case WaypointMode::XY_FORWARD_DIR:
                 return ep.head<2>().norm();
+            case WaypointMode::LEVEL_ORIENTATION:
+                return ea.head<2>().norm();
+            case WaypointMode::ONLY_Z:
+                return std::abs(ep(2));
             case WaypointMode::FULL_POSE:
             default:
                 return std::sqrt(ep.squaredNorm() + ea.squaredNorm());
@@ -271,6 +298,7 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
 
     bool keep_altitude = false;
     double desired_altitude = 0.0;
+    bool require_altitude_convergence = false;
     if (wp["keep_altitude"]) {
         keep_altitude = wp["keep_altitude"].as<bool>();
     }
@@ -281,13 +309,19 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
                                      "required field 'desired_altitude'");
         }
         desired_altitude = wp["desired_altitude"].as<double>();
+        if (wp["require_altitude_convergence"]) {
+            require_altitude_convergence =
+                wp["require_altitude_convergence"].as<bool>();
+        }
     }
 
     return WaypointGoal{.pose = pose,
                         .mode = mode,
                         .convergence_threshold = convergence_threshold,
                         .keep_altitude = keep_altitude,
-                        .desired_altitude = desired_altitude};
+                        .desired_altitude = desired_altitude,
+                        .require_altitude_convergence =
+                            require_altitude_convergence};
 }
 
 LandmarkConvergenceGoal load_landmark_goal_from_yaml(
