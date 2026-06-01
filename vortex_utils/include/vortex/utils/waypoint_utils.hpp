@@ -36,6 +36,14 @@ struct LandmarkConvergenceGoal {
 };
 
 /**
+ * @brief Convert a WaypointMode enum value to its string representation.
+ *
+ * @param mode The WaypointMode to convert.
+ * @return Upper-case string name of the mode (e.g. "FULL_POSE").
+ */
+std::string waypoint_mode_to_string(WaypointMode mode);
+
+/**
  * @brief Convert a string to a WaypointMode enum value.
  *
  * Accepts both upper-case ("FULL_POSE") and lower-case ("full_pose") variants.

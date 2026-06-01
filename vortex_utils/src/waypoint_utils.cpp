@@ -6,6 +6,31 @@
 
 namespace vortex::utils::waypoints {
 
+std::string waypoint_mode_to_string(WaypointMode mode) {
+    switch (mode) {
+        case WaypointMode::FULL_POSE:
+            return "FULL_POSE";
+        case WaypointMode::ONLY_POSITION:
+            return "ONLY_POSITION";
+        case WaypointMode::FORWARD_HEADING:
+            return "FORWARD_HEADING";
+        case WaypointMode::ONLY_ORIENTATION:
+            return "ONLY_ORIENTATION";
+        case WaypointMode::POSITION_AND_YAW:
+            return "POSITION_AND_YAW";
+        case WaypointMode::XY_AND_YAW:
+            return "XY_AND_YAW";
+        case WaypointMode::XY_FORWARD_DIR:
+            return "XY_FORWARD_DIR";
+        case WaypointMode::LEVEL_ORIENTATION:
+            return "LEVEL_ORIENTATION";
+        case WaypointMode::ONLY_Z:
+            return "ONLY_Z";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 WaypointMode string_to_waypoint_mode(const std::string& str) {
     if (str == "FULL_POSE" || str == "full_pose")
         return WaypointMode::FULL_POSE;
