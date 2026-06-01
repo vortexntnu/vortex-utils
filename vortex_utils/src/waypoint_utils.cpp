@@ -26,6 +26,8 @@ std::string waypoint_mode_to_string(WaypointMode mode) {
             return "LEVEL_ORIENTATION";
         case WaypointMode::ONLY_Z:
             return "ONLY_Z";
+        case WaypointMode::POS_Z_LEVEL_ORIENTATION:
+            return "POS_Z_LEVEL_ORIENTATION";
         default:
             return "UNKNOWN";
     }
@@ -50,6 +52,8 @@ WaypointMode string_to_waypoint_mode(const std::string& str) {
         return WaypointMode::LEVEL_ORIENTATION;
     if (str == "ONLY_Z" || str == "only_z")
         return WaypointMode::ONLY_Z;
+    if (str == "POS_Z_LEVEL_ORIENTATION" || str == "pos_z_level_orientation")
+        return WaypointMode::POS_Z_LEVEL_ORIENTATION;
     throw std::runtime_error("Unknown WaypointMode string: '" + str + "'");
 }
 
@@ -75,6 +79,8 @@ WaypointMode int_to_waypoint_mode(int value) {
             return WaypointMode::LEVEL_ORIENTATION;
         case static_cast<int>(WaypointMode::ONLY_Z):
             return WaypointMode::ONLY_Z;
+        case static_cast<int>(WaypointMode::POS_Z_LEVEL_ORIENTATION):
+            return WaypointMode::POS_Z_LEVEL_ORIENTATION;
         default:
             throw std::runtime_error("Unknown WaypointMode numeric value: " +
                                      std::to_string(value));
@@ -215,6 +221,16 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
             waypoint_out.y = current_state.y;
             waypoint_out.set_ori(current_state.ori_quaternion());
             break;
+
+        case WaypointMode::POS_Z_LEVEL_ORIENTATION: {
+            waypoint_out.x = current_state.x;
+            waypoint_out.y = current_state.y;
+            const double current_yaw = vortex::utils::math::quat_to_euler(
+                current_state.ori_quaternion())(2);
+            waypoint_out.set_ori(Eigen::Quaterniond(
+                Eigen::AngleAxisd(current_yaw, Eigen::Vector3d::UnitZ())));
+            break;
+        }
     }
 
     return waypoint_out;
@@ -247,6 +263,8 @@ bool has_converged(const Pose& state,
                 return ea.head<2>().norm();
             case WaypointMode::ONLY_Z:
                 return std::abs(ep(2));
+            case WaypointMode::POS_Z_LEVEL_ORIENTATION:
+                return std::sqrt(ep(2) * ep(2) + ea.head<2>().squaredNorm());
             case WaypointMode::FULL_POSE:
             default:
                 return std::sqrt(ep.squaredNorm() + ea.squaredNorm());
