@@ -452,7 +452,7 @@ enum class WaypointMode : uint8_t {
     XY_FORWARD_DIR =
         6,  ///< Control x, y; hold z; yaw auto-computed toward target.
     LEVEL_ORIENTATION =
-        7,  ///< Hold current position and yaw; drive roll=pitch=0.
+        7,       ///< Hold current position and yaw; drive roll=pitch=0.
     ONLY_Z = 8,  ///< Hold current x, y, orientation; control z only.
     POS_Z_LEVEL_ORIENTATION =
         9,  ///< Control z; hold current x, y; drive roll=pitch=0, hold yaw.

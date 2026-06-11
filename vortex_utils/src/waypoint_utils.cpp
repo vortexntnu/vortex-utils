@@ -358,13 +358,13 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
         }
     }
 
-    return WaypointGoal{.pose = pose,
-                        .mode = mode,
-                        .convergence_threshold = convergence_threshold,
-                        .keep_altitude = keep_altitude,
-                        .desired_altitude = desired_altitude,
-                        .require_altitude_convergence =
-                            require_altitude_convergence};
+    return WaypointGoal{
+        .pose = pose,
+        .mode = mode,
+        .convergence_threshold = convergence_threshold,
+        .keep_altitude = keep_altitude,
+        .desired_altitude = desired_altitude,
+        .require_altitude_convergence = require_altitude_convergence};
 }
 
 LandmarkConvergenceGoal load_landmark_goal_from_yaml(

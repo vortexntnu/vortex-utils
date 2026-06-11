@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Send the same waypoint goal to both the RPY and quaternion reference filter
-action servers simultaneously so their outputs can be compared."""
+"""Send the same waypoint goal to both the RPY and quaternion reference filter action servers simultaneously so their outputs can be compared."""
 
 import argparse
 
@@ -8,6 +7,7 @@ import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from vortex_msgs.action import ReferenceFilterQuatWaypoint, ReferenceFilterWaypoint
+
 from vortex_utils.python_utils import euler_to_quat
 
 
@@ -123,8 +123,14 @@ def main():
 
     rclpy.init()
     node = DualGoalSender(
-        args.x, args.y, args.z, args.roll, args.pitch, args.yaw,
-        args.ns, args.threshold,
+        args.x,
+        args.y,
+        args.z,
+        args.roll,
+        args.pitch,
+        args.yaw,
+        args.ns,
+        args.threshold,
     )
     rclpy.spin(node)
 
