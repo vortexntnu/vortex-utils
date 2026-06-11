@@ -1,16 +1,14 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import LaunchConfiguration
-
-from launch_ros.actions import Node
-
 from auv_setup.launch_arg_common import (
     declare_drone_and_namespace_args,
     resolve_drone_and_namespace,
 )
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 
 def launch_setup(context, *args, **kwargs):
@@ -29,9 +27,12 @@ def launch_setup(context, *args, **kwargs):
         executable='pressure_to_depth_node',
         name='pressure_to_depth',
         namespace=namespace,
-        parameters=[env_params, {
-            'transform_to_base_link': LaunchConfiguration('transform_to_base_link'),
-        }],
+        parameters=[
+            env_params,
+            {
+                'transform_to_base_link': LaunchConfiguration('transform_to_base_link'),
+            },
+        ],
         output='screen',
     )
 
@@ -43,7 +44,12 @@ def generate_launch_description():
         'environment',
         default_value='trondheim_freshwater',
         description='Environment config to load water density and gravity from.',
-        choices=['longbeach', 'stonefish_sim', 'trondheim_freshwater', 'trondheim_saltwater'],
+        choices=[
+            'longbeach',
+            'stonefish_sim',
+            'trondheim_freshwater',
+            'trondheim_saltwater',
+        ],
     )
     transform_arg = DeclareLaunchArgument(
         'transform_to_base_link',
