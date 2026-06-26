@@ -1,55 +1,90 @@
-cmake_minimum_required(VERSION 3.8)
-project(vortex_utils)
+cmake_minimum_required(VERSION 3.20)
 
-set(CMAKE_CXX_STANDARD 20)
-add_compile_options(-Wall -Wextra -Wpedantic)
+project(vortex_utils
+  VERSION 0.1.0
+  LANGUAGES CXX
+)
 
-find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_python REQUIRED)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+option(VORTEX_UTILS_BUILD_TESTS "Build vortex_utils tests" ON)
+
+add_library(vortex_utils
+  src/math.cpp
+  src/waypoint_utils.cpp
+)
+
+add_library(vortex::utils ALIAS vortex_utils)
+
+target_compile_features(vortex_utils PUBLIC cxx_std_20)
+
+target_compile_options(vortex_utils PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+
 find_package(Eigen3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED
-  src/math.cpp
-  src/waypoint_utils.cpp)
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-  yaml-cpp
+target_link_libraries(vortex_utils
+  PUBLIC
+    Eigen3::Eigen
+    yaml-cpp
 )
 
-ament_target_dependencies(${PROJECT_NAME} PUBLIC
-  Eigen3
+target_include_directories(vortex_utils
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
+set_target_properties(vortex_utils PROPERTIES
+  EXPORT_NAME utils
+)
+
+install(
+  TARGETS vortex_utils
+  EXPORT vortex_utilsTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
 install(
   DIRECTORY include/
-  DESTINATION include
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(
-  TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
+  EXPORT vortex_utilsTargets
+  FILE vortex_utilsTargets.cmake
+  NAMESPACE vortex::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vortex_utils
 )
 
-ament_export_dependencies()
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/vortex_utilsConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/vortex_utilsConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vortex_utils
+)
 
-ament_python_install_package(${PROJECT_NAME})
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/vortex_utilsConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
 
-if(BUILD_TESTING)
-  add_subdirectory(py_test)
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/vortex_utilsConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/vortex_utilsConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vortex_utils
+)
+
+if(VORTEX_UTILS_BUILD_TESTS)
+  enable_testing()
   add_subdirectory(cpp_test)
 endif()
-
-ament_package()
