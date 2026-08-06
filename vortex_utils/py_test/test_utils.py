@@ -4,7 +4,6 @@ import time
 import numpy as np
 import pytest
 from gi.repository import Gst
-
 from vortex_utils.gst_utils import H264Decoder
 from vortex_utils.python_utils import (
     PoseData,
