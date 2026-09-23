@@ -467,6 +467,10 @@ struct Waypoint {
     bool keep_altitude{false};
     double desired_altitude{0.0};
     bool require_altitude_convergence{false};
+    double convergence_threshold{0.0};
+    double position_tolerance{0.0};
+    double orientation_tolerance{0.0};
+    double hold_time_sec{0.0};
 };
 
 struct SonarInfo {
