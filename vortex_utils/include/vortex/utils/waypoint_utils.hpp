@@ -71,6 +71,38 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
                            const Pose& current_state);
 
 /**
+ * @brief Position and orientation error over the DOFs a waypoint mode controls.
+ *
+ * Both are norms: position in meters, orientation in radians (quaternion
+ * error, small-angle). DOFs the mode does not control contribute 0.
+ */
+struct ControlledError {
+    double position{0.0};
+    double orientation{0.0};
+};
+
+/**
+ * @brief Separate convergence tolerances for position [m] and orientation
+ * [rad]. A value <= 0 means that component is not checked.
+ */
+struct ConvergenceTolerance {
+    double position{0.0};
+    double orientation{0.0};
+};
+
+/**
+ * @brief Compute the controlled position and orientation error.
+ *
+ * @param state The current state pose.
+ * @param waypoint_goal The waypoint goal pose.
+ * @param mode The waypoint mode.
+ * @return Norms of the controlled position and orientation errors.
+ */
+ControlledError controlled_error(const Pose& state,
+                                 const Pose& waypoint_goal,
+                                 WaypointMode mode);
+
+/**
  * @brief Check whether the state has converged to the waypoint goal.
  *
  * Only the DOFs relevant to the waypoint mode are included in the error norm.
@@ -85,6 +117,18 @@ bool has_converged(const Pose& state,
                    const Pose& waypoint_goal,
                    WaypointMode mode,
                    double convergence_threshold);
+
+/**
+ * @brief Check convergence with separate position and orientation tolerances.
+ *
+ * Converged when the controlled position error is below
+ * @p tolerance.position and the controlled orientation error is below
+ * @p tolerance.orientation. A tolerance <= 0 disables that check.
+ */
+bool has_converged(const Pose& state,
+                   const Pose& waypoint_goal,
+                   WaypointMode mode,
+                   const ConvergenceTolerance& tolerance);
 
 /**
  * @brief Apply a pose offset to a base pose.

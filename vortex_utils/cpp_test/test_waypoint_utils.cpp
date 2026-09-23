@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <cmath>
+#include <random>
+#include <vortex/utils/math.hpp>
 #include <vortex/utils/waypoint_utils.hpp>
 
 namespace vortex::utils::waypoints {
@@ -134,6 +136,134 @@ TEST(HasConverged, ForwardHeadingUsesPositionAndYawOnly) {
     // Roll differs but should be ignored in FORWARD_HEADING mode
     EXPECT_TRUE(
         has_converged(measured, reference, WaypointMode::FORWARD_HEADING, 0.1));
+}
+
+// --- has_converged refactor equivalence ---
+
+namespace {
+
+// Verbatim copy of has_converged as it was before the controlled_error
+// refactor. The refactor must not change any result.
+bool legacy_has_converged(const Pose& state,
+                          const Pose& waypoint_goal,
+                          WaypointMode mode,
+                          double convergence_threshold) {
+    const Eigen::Vector3d ep = state.pos_vector() - waypoint_goal.pos_vector();
+    const Eigen::Vector3d ea = vortex::utils::math::quaternion_error(
+        state.ori_quaternion(), waypoint_goal.ori_quaternion());
+
+    const double err = [&] {
+        switch (mode) {
+            case WaypointMode::ONLY_POSITION:
+                return ep.norm();
+            case WaypointMode::ONLY_ORIENTATION:
+                return ea.norm();
+            case WaypointMode::FORWARD_HEADING:
+                return std::sqrt(ep.squaredNorm() + ea(2) * ea(2));
+            case WaypointMode::POSITION_AND_YAW:
+                return std::sqrt(ep.squaredNorm() + ea(2) * ea(2));
+            case WaypointMode::XY_AND_YAW:
+                return std::sqrt(ep.head<2>().squaredNorm() + ea(2) * ea(2));
+            case WaypointMode::XY_FORWARD_DIR:
+                return ep.head<2>().norm();
+            case WaypointMode::LEVEL_ORIENTATION:
+                return ea.head<2>().norm();
+            case WaypointMode::ONLY_Z:
+                return std::abs(ep(2));
+            case WaypointMode::POS_Z_LEVEL_ORIENTATION:
+                return std::sqrt(ep(2) * ep(2) + ea.head<2>().squaredNorm());
+            case WaypointMode::FULL_POSE:
+            default:
+                return std::sqrt(ep.squaredNorm() + ea.squaredNorm());
+        }
+    }();
+    return err < convergence_threshold;
+}
+
+Pose random_pose(std::mt19937& rng, double pos_range, double ang_range) {
+    std::uniform_real_distribution<double> pos(-pos_range, pos_range);
+    std::uniform_real_distribution<double> ang(-ang_range, ang_range);
+    const Eigen::Quaterniond q =
+        Eigen::AngleAxisd(ang(rng), Eigen::Vector3d::UnitZ()) *
+        Eigen::AngleAxisd(ang(rng), Eigen::Vector3d::UnitY()) *
+        Eigen::AngleAxisd(ang(rng), Eigen::Vector3d::UnitX());
+    return Pose::from_eigen(Eigen::Vector3d(pos(rng), pos(rng), pos(rng)),
+                            q.normalized());
+}
+
+constexpr WaypointMode kAllModes[] = {
+    WaypointMode::FULL_POSE,        WaypointMode::ONLY_POSITION,
+    WaypointMode::FORWARD_HEADING,  WaypointMode::ONLY_ORIENTATION,
+    WaypointMode::POSITION_AND_YAW, WaypointMode::XY_AND_YAW,
+    WaypointMode::XY_FORWARD_DIR,   WaypointMode::LEVEL_ORIENTATION,
+    WaypointMode::ONLY_Z,           WaypointMode::POS_Z_LEVEL_ORIENTATION};
+
+}  // namespace
+
+TEST(HasConvergedRefactor, MatchesLegacyForRandomPoses) {
+    std::mt19937 rng(12345);
+    std::uniform_real_distribution<double> thr(0.05, 1.5);
+    int checked = 0;
+    for (int i = 0; i < 10000; ++i) {
+        // Small ranges so a good share of the cases lies near the threshold.
+        const Pose goal = random_pose(rng, 0.5, 0.4);
+        const Pose state = random_pose(rng, 0.5, 0.4);
+        const double threshold = thr(rng);
+        for (const auto mode : kAllModes) {
+            EXPECT_EQ(has_converged(state, goal, mode, threshold),
+                      legacy_has_converged(state, goal, mode, threshold))
+                << "sample " << i << " mode " << static_cast<int>(mode);
+            ++checked;
+        }
+    }
+    EXPECT_EQ(checked, 100000);
+}
+
+// --- controlled_error and separate tolerances ---
+
+TEST(ControlledError, SplitsPositionAndOrientation) {
+    const Eigen::Quaterniond q(
+        Eigen::AngleAxisd(0.2, Eigen::Vector3d::UnitZ()));
+    const Pose state = Pose::from_eigen(Eigen::Vector3d(0.3, 0.4, 5.0), q);
+    const Pose goal{};
+
+    const auto full = controlled_error(state, goal, WaypointMode::FULL_POSE);
+    EXPECT_NEAR(full.position, std::sqrt(0.09 + 0.16 + 25.0), 1e-12);
+    EXPECT_NEAR(full.orientation, 0.2, 1e-3);
+
+    const auto xy = controlled_error(state, goal, WaypointMode::XY_AND_YAW);
+    EXPECT_NEAR(xy.position, 0.5, 1e-12);
+    EXPECT_NEAR(xy.orientation, 0.2, 1e-3);
+
+    const auto only_z = controlled_error(state, goal, WaypointMode::ONLY_Z);
+    EXPECT_NEAR(only_z.position, 5.0, 1e-12);
+    EXPECT_DOUBLE_EQ(only_z.orientation, 0.0);
+}
+
+TEST(HasConvergedTolerance, PositionAndOrientationCheckedSeparately) {
+    const Eigen::Quaterniond q(
+        Eigen::AngleAxisd(0.2, Eigen::Vector3d::UnitZ()));
+    const Pose state = Pose::from_eigen(Eigen::Vector3d(0.05, 0.0, 0.0), q);
+    const Pose goal{};
+
+    // Position 5 cm, orientation ~0.2 rad.
+    EXPECT_TRUE(has_converged(state, goal, WaypointMode::FULL_POSE,
+                              ConvergenceTolerance{0.1, 0.3}));
+    EXPECT_FALSE(has_converged(state, goal, WaypointMode::FULL_POSE,
+                               ConvergenceTolerance{0.1, 0.1}));
+    EXPECT_FALSE(has_converged(state, goal, WaypointMode::FULL_POSE,
+                               ConvergenceTolerance{0.01, 0.3}));
+    // The combined threshold would accept this, the tight orientation does not.
+    EXPECT_TRUE(has_converged(state, goal, WaypointMode::FULL_POSE, 0.5));
+}
+
+TEST(HasConvergedTolerance, UnsetToleranceIsNotChecked) {
+    const Pose state{5.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0};
+    const Pose goal{};
+    EXPECT_TRUE(has_converged(state, goal, WaypointMode::FULL_POSE,
+                              ConvergenceTolerance{0.0, 0.0}));
+    EXPECT_TRUE(has_converged(state, goal, WaypointMode::ONLY_ORIENTATION,
+                              ConvergenceTolerance{0.01, 0.01}));
 }
 
 }  // namespace vortex::utils::waypoints

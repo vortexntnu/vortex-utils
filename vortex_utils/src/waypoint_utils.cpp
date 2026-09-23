@@ -236,42 +236,73 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
     return waypoint_out;
 }
 
-bool has_converged(const Pose& state,
-                   const Pose& waypoint_goal,
-                   WaypointMode mode,
-                   double convergence_threshold) {
+namespace {
+
+/// Squared position and orientation error over the DOFs controlled by @p mode.
+struct ControlledErrorSq {
+    double position{0.0};
+    double orientation{0.0};
+};
+
+ControlledErrorSq controlled_error_sq(const Pose& state,
+                                      const Pose& waypoint_goal,
+                                      WaypointMode mode) {
     const Eigen::Vector3d ep = state.pos_vector() - waypoint_goal.pos_vector();
 
     const Eigen::Vector3d ea = vortex::utils::math::quaternion_error(
         state.ori_quaternion(), waypoint_goal.ori_quaternion());
 
-    const double err = [&] {
-        switch (mode) {
-            case WaypointMode::ONLY_POSITION:
-                return ep.norm();
-            case WaypointMode::ONLY_ORIENTATION:
-                return ea.norm();
-            case WaypointMode::FORWARD_HEADING:
-                return std::sqrt(ep.squaredNorm() + ea(2) * ea(2));
-            case WaypointMode::POSITION_AND_YAW:
-                return std::sqrt(ep.squaredNorm() + ea(2) * ea(2));
-            case WaypointMode::XY_AND_YAW:
-                return std::sqrt(ep.head<2>().squaredNorm() + ea(2) * ea(2));
-            case WaypointMode::XY_FORWARD_DIR:
-                return ep.head<2>().norm();
-            case WaypointMode::LEVEL_ORIENTATION:
-                return ea.head<2>().norm();
-            case WaypointMode::ONLY_Z:
-                return std::abs(ep(2));
-            case WaypointMode::POS_Z_LEVEL_ORIENTATION:
-                return std::sqrt(ep(2) * ep(2) + ea.head<2>().squaredNorm());
-            case WaypointMode::FULL_POSE:
-            default:
-                return std::sqrt(ep.squaredNorm() + ea.squaredNorm());
-        }
-    }();
+    switch (mode) {
+        case WaypointMode::ONLY_POSITION:
+            return {ep.squaredNorm(), 0.0};
+        case WaypointMode::ONLY_ORIENTATION:
+            return {0.0, ea.squaredNorm()};
+        case WaypointMode::FORWARD_HEADING:
+        case WaypointMode::POSITION_AND_YAW:
+            return {ep.squaredNorm(), ea(2) * ea(2)};
+        case WaypointMode::XY_AND_YAW:
+            return {ep.head<2>().squaredNorm(), ea(2) * ea(2)};
+        case WaypointMode::XY_FORWARD_DIR:
+            return {ep.head<2>().squaredNorm(), 0.0};
+        case WaypointMode::LEVEL_ORIENTATION:
+            return {0.0, ea.head<2>().squaredNorm()};
+        case WaypointMode::ONLY_Z:
+            return {ep(2) * ep(2), 0.0};
+        case WaypointMode::POS_Z_LEVEL_ORIENTATION:
+            return {ep(2) * ep(2), ea.head<2>().squaredNorm()};
+        case WaypointMode::FULL_POSE:
+        default:
+            return {ep.squaredNorm(), ea.squaredNorm()};
+    }
+}
 
-    return err < convergence_threshold;
+}  // namespace
+
+ControlledError controlled_error(const Pose& state,
+                                 const Pose& waypoint_goal,
+                                 WaypointMode mode) {
+    const auto sq = controlled_error_sq(state, waypoint_goal, mode);
+    return {std::sqrt(sq.position), std::sqrt(sq.orientation)};
+}
+
+bool has_converged(const Pose& state,
+                   const Pose& waypoint_goal,
+                   WaypointMode mode,
+                   double convergence_threshold) {
+    const auto sq = controlled_error_sq(state, waypoint_goal, mode);
+    return std::sqrt(sq.position + sq.orientation) < convergence_threshold;
+}
+
+bool has_converged(const Pose& state,
+                   const Pose& waypoint_goal,
+                   WaypointMode mode,
+                   const ConvergenceTolerance& tolerance) {
+    const auto err = controlled_error(state, waypoint_goal, mode);
+    const bool position_ok =
+        tolerance.position <= 0.0 || err.position < tolerance.position;
+    const bool orientation_ok =
+        tolerance.orientation <= 0.0 || err.orientation < tolerance.orientation;
+    return position_ok && orientation_ok;
 }
 
 Pose apply_pose_offset(const Pose& base, const Pose& offset) {
