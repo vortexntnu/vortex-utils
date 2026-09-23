@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 #include <random>
 #include <vortex/utils/math.hpp>
 #include <vortex/utils/waypoint_utils.hpp>
@@ -264,6 +266,39 @@ TEST(HasConvergedTolerance, UnsetToleranceIsNotChecked) {
                               ConvergenceTolerance{0.0, 0.0}));
     EXPECT_TRUE(has_converged(state, goal, WaypointMode::ONLY_ORIENTATION,
                               ConvergenceTolerance{0.01, 0.01}));
+}
+
+// --- YAML loader: hold and separate tolerances ---
+
+TEST(LoadWaypointGoal, ReadsHoldAndTolerances) {
+    const auto path = std::filesystem::temp_directory_path() /
+                      "vortex_utils_test_waypoint_goal.yaml";
+    {
+        std::ofstream out(path);
+        out << "with_tolerances:\n"
+               "  mode: full_pose\n"
+               "  position: {x: 1.0, y: 2.0, z: 3.0}\n"
+               "  orientation: {roll: 0.0, pitch: 0.0, yaw: 90.0}\n"
+               "  hold_time: 1.5\n"
+               "  position_tolerance: 0.07\n"
+               "  orientation_tolerance_deg: 10.0\n"
+               "plain:\n"
+               "  mode: only_position\n"
+               "  position: {x: 1.0, y: 2.0, z: 3.0}\n";
+    }
+
+    const auto goal =
+        load_waypoint_goal_from_yaml(path.string(), "with_tolerances");
+    EXPECT_DOUBLE_EQ(goal.hold_time_sec, 1.5);
+    EXPECT_DOUBLE_EQ(goal.position_tolerance, 0.07);
+    EXPECT_NEAR(goal.orientation_tolerance, 10.0 * M_PI / 180.0, 1e-12);
+
+    const auto plain = load_waypoint_goal_from_yaml(path.string(), "plain");
+    EXPECT_DOUBLE_EQ(plain.hold_time_sec, 0.0);
+    EXPECT_DOUBLE_EQ(plain.position_tolerance, 0.0);
+    EXPECT_DOUBLE_EQ(plain.orientation_tolerance, 0.0);
+
+    std::filesystem::remove(path);
 }
 
 }  // namespace vortex::utils::waypoints

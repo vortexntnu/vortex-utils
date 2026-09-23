@@ -20,6 +20,9 @@ struct WaypointGoal {
     bool keep_altitude{false};
     double desired_altitude{0.0};
     bool require_altitude_convergence{false};
+    double hold_time_sec{0.0};
+    double position_tolerance{0.0};     // [m], 0 = use convergence_threshold
+    double orientation_tolerance{0.0};  // [rad], 0 = use convergence_threshold
 };
 
 /**
@@ -180,6 +183,9 @@ Pose load_pose_from_yaml(const std::string& file_path,
  *   convergence_threshold: 0.1  # Optional, default is 0.1
  *   keep_altitude: true          # Optional, default false
  *   desired_altitude: 1.5        # Required when keep_altitude is true
+ *   hold_time: 1.0               # Optional [s], default 0 (no hold)
+ *   position_tolerance: 0.1      # Optional [m], default 0 (use threshold)
+ *   orientation_tolerance_deg: 5 # Optional [deg], default 0 (use threshold)
  * @endcode
  *
  * @param file_path Path to the YAML file.

@@ -389,13 +389,30 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
         }
     }
 
+    double hold_time_sec = 0.0;
+    if (wp["hold_time"]) {
+        hold_time_sec = wp["hold_time"].as<double>();
+    }
+    double position_tolerance = 0.0;
+    if (wp["position_tolerance"]) {
+        position_tolerance = wp["position_tolerance"].as<double>();
+    }
+    double orientation_tolerance = 0.0;
+    if (wp["orientation_tolerance_deg"]) {
+        orientation_tolerance =
+            wp["orientation_tolerance_deg"].as<double>() * (M_PI / 180.0);
+    }
+
     return WaypointGoal{
         .pose = pose,
         .mode = mode,
         .convergence_threshold = convergence_threshold,
         .keep_altitude = keep_altitude,
         .desired_altitude = desired_altitude,
-        .require_altitude_convergence = require_altitude_convergence};
+        .require_altitude_convergence = require_altitude_convergence,
+        .hold_time_sec = hold_time_sec,
+        .position_tolerance = position_tolerance,
+        .orientation_tolerance = orientation_tolerance};
 }
 
 LandmarkConvergenceGoal load_landmark_goal_from_yaml(
