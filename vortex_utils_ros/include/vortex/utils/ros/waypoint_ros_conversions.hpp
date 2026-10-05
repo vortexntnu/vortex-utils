@@ -96,6 +96,10 @@ inline vortex::utils::types::Waypoint waypoint_from_ros(
     wp.keep_altitude = ros_wp.keep_altitude;
     wp.desired_altitude = ros_wp.desired_altitude;
     wp.require_altitude_convergence = ros_wp.require_altitude_convergence;
+    wp.convergence_threshold = ros_wp.convergence_threshold;
+    wp.position_tolerance = ros_wp.position_tolerance;
+    wp.orientation_tolerance = ros_wp.orientation_tolerance;
+    wp.hold_time_sec = ros_wp.hold_time_sec;
     return wp;
 }
 
