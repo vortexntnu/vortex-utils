@@ -365,9 +365,14 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
     const auto mode = load_mode(wp);
     const Pose pose = load_pose_for_mode(wp, mode);
 
-    double convergence_threshold = 0.1;
-    if (wp["convergence_threshold"]) {
-        convergence_threshold = wp["convergence_threshold"].as<double>();
+    double position_tolerance = 0.0;
+    if (wp["position_tolerance"]) {
+        position_tolerance = wp["position_tolerance"].as<double>();
+    }
+    double orientation_tolerance = 0.0;
+    if (wp["orientation_tolerance_deg"]) {
+        orientation_tolerance =
+            wp["orientation_tolerance_deg"].as<double>() * (M_PI / 180.0);
     }
 
     bool keep_altitude = false;
@@ -392,7 +397,8 @@ WaypointGoal load_waypoint_goal_from_yaml(const std::string& file_path,
     return WaypointGoal{
         .pose = pose,
         .mode = mode,
-        .convergence_threshold = convergence_threshold,
+        .position_tolerance = position_tolerance,
+        .orientation_tolerance = orientation_tolerance,
         .keep_altitude = keep_altitude,
         .desired_altitude = desired_altitude,
         .require_altitude_convergence = require_altitude_convergence};
