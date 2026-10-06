@@ -238,7 +238,6 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
 
 namespace {
 
-/// Squared position and orientation error over the DOFs controlled by @p mode.
 struct ControlledErrorSq {
     double position{0.0};
     double orientation{0.0};
