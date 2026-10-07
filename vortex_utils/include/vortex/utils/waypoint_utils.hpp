@@ -11,12 +11,13 @@ using vortex::utils::types::WaypointMode;
 
 /**
  * @brief Struct to represent a waypoint goal, containing the target pose, the
- * waypoint mode, and the convergence threshold.
+ * waypoint mode, and the position [m] and orientation [rad] tolerances.
  */
 struct WaypointGoal {
     Pose pose;
     WaypointMode mode;
-    double convergence_threshold{0.1};
+    double position_tolerance{0.0};
+    double orientation_tolerance{0.0};
     bool keep_altitude{false};
     double desired_altitude{0.0};
     bool require_altitude_convergence{false};
@@ -71,6 +72,34 @@ Pose compute_waypoint_goal(const Pose& incoming_waypoint,
                            const Pose& current_state);
 
 /**
+ * @brief Position [m] and orientation [rad] error over the DOFs a waypoint
+ * mode controls.
+ */
+struct ControlledError {
+    double position{0.0};
+    double orientation{0.0};
+};
+
+/**
+ * @brief Position [m] and orientation [rad] tolerances. A value <= 0 is not
+ * checked.
+ */
+struct ConvergenceTolerance {
+    double position{0.0};
+    double orientation{0.0};
+};
+
+/**
+ * @brief Compute the controlled position and orientation error.
+ * @param state The current state pose.
+ * @param waypoint_goal The waypoint goal pose.
+ * @param mode The waypoint mode.
+ */
+ControlledError controlled_error(const Pose& state,
+                                 const Pose& waypoint_goal,
+                                 WaypointMode mode);
+
+/**
  * @brief Check whether the state has converged to the waypoint goal.
  *
  * Only the DOFs relevant to the waypoint mode are included in the error norm.
@@ -85,6 +114,14 @@ bool has_converged(const Pose& state,
                    const Pose& waypoint_goal,
                    WaypointMode mode,
                    double convergence_threshold);
+
+/**
+ * @brief Check convergence with separate position and orientation tolerances.
+ */
+bool has_converged(const Pose& state,
+                   const Pose& waypoint_goal,
+                   WaypointMode mode,
+                   const ConvergenceTolerance& tolerance);
 
 /**
  * @brief Apply a pose offset to a base pose.
@@ -133,9 +170,10 @@ Pose load_pose_from_yaml(const std::string& file_path,
  * "only_position") position:            # Required for FULL_POSE,
  * ONLY_POSITION, FORWARD_HEADING x: 1.0 y: 0.0 z: -0.5 orientation:         #
  * Required for FULL_POSE, ONLY_ORIENTATION roll: 0.0 pitch: 0.0 yaw: 3.14159
- *   convergence_threshold: 0.1  # Optional, default is 0.1
- *   keep_altitude: true          # Optional, default false
- *   desired_altitude: 1.5        # Required when keep_altitude is true
+ *   position_tolerance: 0.1          # Optional [m]
+ *   orientation_tolerance_deg: 5.0   # Optional [deg]
+ *   keep_altitude: true              # Optional, default false
+ *   desired_altitude: 1.5            # Required when keep_altitude is true
  * @endcode
  *
  * @param file_path Path to the YAML file.
