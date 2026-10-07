@@ -13,9 +13,12 @@
 class RpyPublisherNode : public rclcpp::Node {
    public:
     RpyPublisherNode() : Node("rpy_publisher_node") {
-        this->declare_parameter<std::vector<std::string>>("input_topics", {});
-        this->declare_parameter<std::vector<std::string>>("output_topics", {});
-        this->declare_parameter<std::vector<std::string>>("input_types", {});
+        this->declare_parameter<std::vector<std::string>>(
+            "input_topics", std::vector<std::string>{});
+        this->declare_parameter<std::vector<std::string>>(
+            "output_topics", std::vector<std::string>{});
+        this->declare_parameter<std::vector<std::string>>(
+            "input_types", std::vector<std::string>{});
 
         auto input_topics =
             this->get_parameter("input_topics").as_string_array();
